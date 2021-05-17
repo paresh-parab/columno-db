@@ -11,7 +11,7 @@ public class HeaderPage extends Page {
         if (findRecord(name) != -1)
             return false;
 
-        addEntry(name, rootID, recordCount);
+        addEntry(new Pair<String, Integer>(name, rootID), recordCount);
         setRecordCount(recordCount + 1);
         return true;
     }
@@ -36,7 +36,7 @@ public class HeaderPage extends Page {
         // record does not exsit
         if (index == -1)
             return false;
-        getData().get(index).setRootID(rootID);
+        ((Pair<String, Integer>)getData().get(index)).setValue(rootID);
         return true;
     }
 
@@ -52,7 +52,7 @@ public class HeaderPage extends Page {
         int recordNum = getRecordCount();
 
         for (int i = 0; i < recordNum; i++) {
-            if(name.equals(getData().get(i).getName()))
+            if(name.equals(((Pair<String, Integer>)getData().get(i)).getKey()))
                 return i;
         }
         return -1;
@@ -65,7 +65,7 @@ public class HeaderPage extends Page {
         // record does not exsit
         if (index == -1)
             return false;
-        rootID.setValue(getData().get(index).getRootID());
+        rootID.setValue(((Pair<String, Integer>)getData().get(index)).getValue());
         return true;
     }
 

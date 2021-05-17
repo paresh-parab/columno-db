@@ -6,36 +6,12 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class Page {
+import static main.edu.uci.db.storage.Constants.PAGE_SIZE;
 
-    public class Entry{
-        private String name;
-        private int rootID;
-
-        public Entry(){
-            rootID = -1;
-            name = null;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public int getRootID() {
-            return rootID;
-        }
-
-        public void setRootID(int rootID) {
-            this.rootID = rootID;
-        }
-    }
+public class Page<KeyType, ValueType> {
 
     private int count;
-    private List<Entry> data;
+    private List<Pair<KeyType, ValueType>> data;
     private int pageID;
     int pinCount;
     boolean isDirty;
@@ -48,26 +24,26 @@ public class Page {
 
     private void resetMemory(){
         data = new ArrayList<>();
-        for(int i=0; i<14; i++){
-            data.add( new Entry()) ;
+        for(int i=0; i< PAGE_SIZE; i++){
+            data.add( new Pair<>()) ;
         }
     }
 
-    public void addEntry(String name, int rootID, int index){
-        data.get(index).setName(name);
-        data.get(index).setRootID(rootID);
+    public void addEntry(Pair p, int index){
+        data.get(index).setKey((KeyType) p.getKey());
+        data.get(index).setValue((ValueType) p.getValue());
     }
 
     public void removeEntry(int index){
         data.remove(index);
+        data.add(new Pair<>());
     }
 
     public Page() {
-
         resetMemory();
     }
 
-    public List<Entry> getData() {
+    public List<Pair<KeyType, ValueType>> getData() {
         return data;
     }
 
@@ -87,19 +63,19 @@ public class Page {
         return pinCount;
     }
 
-    public void WUnlatch() {
+    public void wUnlatch() {
         writeLock.unlock();
     }
 
-    public void WLatch() {
+    public void wLatch() {
         writeLock.lock();
     }
 
-    public void RUnlatch() {
+    public void rUnlatch() {
         readLock.unlock();
     }
 
-    public void RLatch() {
+    public void rLatch() {
         readLock.lock();
     }
 
