@@ -1,8 +1,10 @@
 package main.edu.uci.db.storage;
 
+import java.util.List;
+
 import static main.edu.uci.db.storage.Constants.INVALID_PAGE_ID;
 
-public class BPlusTreePage {
+public class BPlusTreePage<KeyType, ValueType> {
 
     //Page Type (internal or leaf)
     private IndexPageType pageType;
@@ -16,6 +18,13 @@ public class BPlusTreePage {
     private int parentPageID;
     //self page Id
     private int pageID;
+
+    List<Pair<KeyType, ValueType>> array ;
+
+    public BPlusTreePage(Page<KeyType, ValueType> page){
+        setPageID(page.getPageID());
+        array = page.getData();
+    }
 
     public IndexPageType getPageType() {
         return pageType;
@@ -84,4 +93,9 @@ public class BPlusTreePage {
         return isRootPage() ? (isLeafPage() ? 1: 2) : ((maxSize+1)/2);
     }
 
+    public <N extends BPlusTreePage> void moveFirstToEndOf(N recipient, BufferPoolManager bpm) {
+    }
+
+    public <N extends BPlusTreePage> void moveLastToFrontOf(N recipient, int parentIndex, BufferPoolManager bpm) {
+    }
 }
