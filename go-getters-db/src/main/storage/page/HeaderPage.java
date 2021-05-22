@@ -1,4 +1,7 @@
-package main.edu.uci.db.storage;
+package main.storage.page;
+
+import main.common.Pair;
+import main.common.Ref;
 
 public class HeaderPage extends Page {
 
