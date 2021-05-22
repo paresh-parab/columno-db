@@ -1,6 +1,11 @@
-package main.edu.uci.db.storage;
+package main.storage.index;
 
-import static main.edu.uci.db.storage.Constants.INVALID_PAGE_ID;
+import main.buffer.BufferPoolManager;
+import main.storage.page.Page;
+import main.common.Pair;
+import main.storage.page.BPlusTreeLeafPage;
+
+import static main.common.Constants.INVALID_PAGE_ID;
 
 public class IndexIterator {
     private int index;

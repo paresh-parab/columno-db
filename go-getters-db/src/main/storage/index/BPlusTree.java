@@ -1,4 +1,9 @@
-package main.edu.uci.db.storage;
+package main.storage.index;
+
+import main.buffer.BufferPoolManager;
+import main.common.OpType;
+import main.common.Pair;
+import main.storage.page.*;
 
 import java.util.Comparator;
 import java.util.List;
@@ -6,8 +11,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static main.edu.uci.db.storage.Constants.INVALID_PAGE_ID;
-import static main.edu.uci.db.storage.OpType.*;
+import static main.common.Constants.INVALID_PAGE_ID;
+import static main.common.OpType.*;
 
 public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
 
@@ -38,7 +43,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     };
 
     // return the value associated with a given key
-    boolean getValue(KeyType key, List<ValueType> result) {
+    boolean getValue(KeyType key, List<ValueType> result) throws Exception {
         return this.getValue(key, result, null);
     }
 
@@ -150,7 +155,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         return newNode;
     }
 
-    private BPlusTreeInternalPage  split(BPlusTreeInternalPage node, Transaction transaction) {
+    private BPlusTreeInternalPage split(BPlusTreeInternalPage node, Transaction transaction) {
         //step 1 ask for new page from buffer pool manager
         int newPageID = 0;
         Page newPage = buffer_pool_manager.newPage(newPageID);

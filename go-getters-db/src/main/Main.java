@@ -1,4 +1,4 @@
-package main.edu.uci.db.storage;
+package main;
 
 public class Main {
 

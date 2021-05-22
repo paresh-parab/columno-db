@@ -1,7 +1,7 @@
-package test.edu.uci.db.storage;
+package test;
 
-import main.edu.uci.db.storage.HeaderPage;
-import main.edu.uci.db.storage.Ref;
+import main.storage.page.HeaderPage;
+import main.common.Ref;
 
 import static org.junit.jupiter.api.Assertions.*;
 

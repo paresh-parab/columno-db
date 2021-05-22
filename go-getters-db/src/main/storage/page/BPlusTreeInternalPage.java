@@ -1,14 +1,16 @@
-package main.edu.uci.db.storage;
+package main.storage.page;
+
+import main.buffer.BufferPoolManager;
+import main.common.Pair;
 
 import java.lang.instrument.Instrumentation;
 import java.util.Comparator;
-import java.util.List;
 
-import static main.edu.uci.db.storage.Constants.INVALID_PAGE_ID;
-import static main.edu.uci.db.storage.Constants.PAGE_SIZE;
-import static main.edu.uci.db.storage.IndexPageType.INTERNAL_PAGE;
+import static main.common.Constants.INVALID_PAGE_ID;
+import static main.common.Constants.PAGE_SIZE;
+import static main.storage.index.IndexPageType.INTERNAL_PAGE;
 
-public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Comparator> extends BPlusTreePage{
+public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Comparator> extends BPlusTreePage {
 
     private static Instrumentation instrumentation;
 

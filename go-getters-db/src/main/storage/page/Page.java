@@ -1,4 +1,6 @@
-package main.edu.uci.db.storage;
+package main.storage.page;
+
+import main.common.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,15 +8,15 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static main.edu.uci.db.storage.Constants.PAGE_SIZE;
+import static main.common.Constants.PAGE_SIZE;
 
 public class Page<KeyType, ValueType> {
 
     private int count;
     private List<Pair<KeyType, ValueType>> data;
     private int pageID;
-    int pinCount;
-    boolean isDirty;
+    public int pinCount;
+    public boolean isDirty;
 
     private final ReadWriteLock rwlatch
             = new ReentrantReadWriteLock();
@@ -22,7 +24,7 @@ public class Page<KeyType, ValueType> {
             = rwlatch.writeLock();
     private final Lock readLock = rwlatch.readLock();
 
-    private void resetMemory(){
+    public void resetMemory(){
         data = new ArrayList<>();
         for(int i=0; i< PAGE_SIZE; i++){
             data.add( new Pair<>()) ;
@@ -58,6 +60,8 @@ public class Page<KeyType, ValueType> {
     public int getPageID() {
         return pageID;
     }
+
+    public void setPageID(int pageID) { this.pageID = pageID; }
 
     public int getPinCount() {
         return pinCount;
