@@ -1,14 +1,11 @@
-package main.storage.page;
-
-import main.buffer.BufferPoolManager;
-import main.common.Pair;
+package main.storage;
 
 import java.lang.instrument.Instrumentation;
 import java.util.Comparator;
 
-import static main.common.Constants.INVALID_PAGE_ID;
-import static main.common.Constants.PAGE_SIZE;
-import static main.storage.index.IndexPageType.LEAF_PAGE;
+import static main.storage.Constants.INVALID_PAGE_ID;
+import static main.storage.Constants.PAGE_SIZE;
+import static main.storage.IndexPageType.LEAF_PAGE;
 
 public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Comparator> extends BPlusTreePage {
 
@@ -60,40 +57,70 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
     }
 
 
-    public KeyType keyAt(int index) throws Exception {
-        if(index >= 0 && index < getSize())
-            return ((Pair<KeyType, ValueType>)array.get(index)).getKey();
-        else
-            throw new Exception("Invalid index");
-    }
+    public KeyType keyAt(int index) {
 
-    public ValueType valueAt(int index) throws Exception {
-        if(index >= 0 && index < getSize())
-            return ((Pair<KeyType, ValueType>)array.get(index)).getValue();
-        else
-            throw new Exception("Invalid index");
-    }
-
-
-
-    public Pair<KeyType, ValueType> getItem(int index) throws Exception {
-        if(index >= 0 && index < getSize())
-            return (Pair<KeyType, ValueType>) array.get(index);
-        else
-            throw new Exception("Invalid index");
-    }
-
-
-    int insert(KeyType key, ValueType value, KeyComparator comparator) throws Exception {
-        int idx = keyIndex(key,comparator); //first larger than key
-        if(idx >= 0){
-            increaseSize(1);
-            array.add(idx, new Pair<>(key, value));
-            array.remove(array.size()-1);
-            return getSize();
+        try{
+            if(index >= 0 && index < getSize())
+                return ((Pair<KeyType, ValueType>)array.get(index)).getKey();
+            else
+                throw new Exception("Invalid index");
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
         }
-        else
-            throw new Exception("Invalid index for insertion");
+        return null;
+    }
+
+    public ValueType valueAt(int index) {
+
+        try{
+            if(index >= 0 && index < getSize())
+                return ((Pair<KeyType, ValueType>)array.get(index)).getValue();
+            else
+                throw new Exception("Invalid index");
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
+        }
+        return null;
+    }
+
+
+
+    public Pair<KeyType, ValueType> getItem(int index) {
+        try{
+            if(index >= 0 && index < getSize())
+                return (Pair<KeyType, ValueType>) array.get(index);
+            else
+                throw new Exception("Invalid index");
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
+        }
+        return null;
+    }
+
+
+    int insert(KeyType key, ValueType value, KeyComparator comparator) {
+        try{
+            int idx = keyIndex(key,comparator); //first larger than key
+            if(idx >= 0){
+                increaseSize(1);
+                array.add(idx, new Pair<>(key, value));
+                array.remove(array.size()-1);
+                return getSize();
+            }
+            else
+                throw new Exception("Invalid index for insertion");
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
+        }
+        return -1;
 
     }
 
@@ -145,7 +172,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
      * @return   page size after deletion
      */
 
-    int removeAndDeleteRecord( KeyType key,  KeyComparator comparator) throws Exception {
+    int removeAndDeleteRecord( KeyType key,  KeyComparator comparator) {
         int firIdxLargerEqualThanKey = keyIndex(key,comparator);
         if (firIdxLargerEqualThanKey >= getSize() || comparator.compare(key, keyAt(firIdxLargerEqualThanKey)) != 0) {
             return getSize();
@@ -192,7 +219,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
      * update relavent key & value pair in its parent page.
      */
 
-    void moveFirstToEndOf(BPlusTreeLeafPage recipient, BufferPoolManager buffer_pool_manager) throws Exception {
+    void moveFirstToEndOf(BPlusTreeLeafPage recipient, BufferPoolManager buffer_pool_manager) {
         Pair<KeyType, ValueType> pair = getItem(0);
         increaseSize(-1);
         array.remove(0);
@@ -218,13 +245,13 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
      * update relavent key & value pair in its parent page.
      */
 
-    void moveLastToFrontOf(BPlusTreeLeafPage recipient, int parentIndex, BufferPoolManager buffer_pool_manager) throws Exception {
+    void moveLastToFrontOf(BPlusTreeLeafPage recipient, int parentIndex, BufferPoolManager buffer_pool_manager) {
         Pair<KeyType, ValueType> pair = getItem(getSize() - 1);
         increaseSize(-1);
         recipient.copyFirstFrom(pair, parentIndex, buffer_pool_manager);
     }
 
-    void copyFirstFrom(Pair<KeyType, ValueType> item, int parentIndex, BufferPoolManager buffer_pool_manager) throws Exception {
+    void copyFirstFrom(Pair<KeyType, ValueType> item, int parentIndex, BufferPoolManager buffer_pool_manager) {
         if(getSize() + 1 < getMaxSize()){
             increaseSize(1);
             array.add(0, item);

@@ -1,16 +1,13 @@
-package main.storage.page;
-
-import main.buffer.BufferPoolManager;
-import main.common.Pair;
+package main.storage;
 
 import java.lang.instrument.Instrumentation;
 import java.util.Comparator;
 
-import static main.common.Constants.INVALID_PAGE_ID;
-import static main.common.Constants.PAGE_SIZE;
-import static main.storage.index.IndexPageType.INTERNAL_PAGE;
+import static main.storage.Constants.INVALID_PAGE_ID;
+import static main.storage.Constants.PAGE_SIZE;
+import static main.storage.IndexPageType.INTERNAL_PAGE;
 
-public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Comparator> extends BPlusTreePage {
+public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Comparator> extends BPlusTreePage{
 
     private static Instrumentation instrumentation;
 
@@ -32,14 +29,14 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
         super(page);
     }
 
-    KeyType keyAt(int index) throws Exception {
+    KeyType keyAt(int index) {
         if(index >= 0 && index < getSize())
             return ((Pair<KeyType, ValueType>)array.get(index)).getKey();
         else
             throw new Exception("Invalid index");
     }
 
-    void setKeyAt(int index, KeyType key) throws Exception {
+    void setKeyAt(int index, KeyType key) {
         // first key is invalid
         if(index > 0 && index < getSize())
             ((Pair<KeyType, ValueType>)array.get(index)).setKey(key);
@@ -56,14 +53,14 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
         return -1;
     }
 
-    ValueType valueAt(int index) throws Exception {
+    ValueType valueAt(int index) {
         if(index >= 0 && index < getSize())
             return ((Pair<KeyType, ValueType>)array.get(index)).getValue();
         else
             throw new Exception("Invalid index");
     }
 
-    ValueType lookup(KeyType key, KeyComparator comparator) throws Exception {
+    ValueType lookup(KeyType key, KeyComparator comparator) {
         if(getSize() > 1){
             int start = 1, end = getSize();
 
@@ -172,13 +169,21 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
      * Remove the only key & value pair in internal page and return the value
      * NOTE: only call this method within AdjustRoot()(in b_plus_tree.cpp)
      */
-    ValueType  removeAndReturnOnlyChild() throws Exception {
-        ValueType ret = valueAt(0);
-        increaseSize(-1);
-        if(getSize() == 0)
-            return ret;
-        else
-            throw new Exception("There are more than one children");
+    ValueType  removeAndReturnOnlyChild() {
+        try{
+            ValueType ret = valueAt(0);
+            increaseSize(-1);
+            if(getSize() == 0)
+                return ret;
+            else
+                throw new Exception("There are more than one children");
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
+        }
+        return null;
+
     }
 /*****************************************************************************
  * MERGE
@@ -188,7 +193,7 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
      * update relavent key & value pair in its parent page.
      */
 
-    void moveAllTo( BPlusTreeInternalPage recipient, int index_in_parent, BufferPoolManager buffer_pool_manager) throws Exception {
+    void moveAllTo( BPlusTreeInternalPage recipient, int index_in_parent, BufferPoolManager buffer_pool_manager) {
         int start = recipient.getSize();
         int recipPageId = recipient.getPageID();
         // first find parent
@@ -229,7 +234,7 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
      * page, then update relavent key & value pair in its parent page.
      */
 
-    void moveFirstToEndOf( BPlusTreeInternalPage recipient, BufferPoolManager buffer_pool_manager) throws Exception {
+    void moveFirstToEndOf( BPlusTreeInternalPage recipient, BufferPoolManager buffer_pool_manager) {
         Pair<KeyType, ValueType> pair = new Pair<>(keyAt(0), valueAt(0));
         increaseSize(-1);
         array.remove(0);
@@ -262,14 +267,14 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
      * page, then update relavent key & value pair in its parent page.
      */
 
-    void moveLastToFrontOf(BPlusTreeInternalPage recipient, int parent_index, BufferPoolManager buffer_pool_manager) throws Exception {
+    void moveLastToFrontOf(BPlusTreeInternalPage recipient, int parent_index, BufferPoolManager buffer_pool_manager) {
         Pair<KeyType, ValueType> pair = new Pair<>(keyAt(getSize() - 1),valueAt(getSize() - 1));
         increaseSize(-1);
         recipient.copyFirstFrom(pair, parent_index, buffer_pool_manager);
     }
 
 
-    void copyFirstFrom(Pair<KeyType, ValueType> pair, int parent_index, BufferPoolManager buffer_pool_manager) throws Exception {
+    void copyFirstFrom(Pair<KeyType, ValueType> pair, int parent_index, BufferPoolManager buffer_pool_manager) {
         //assert(GetSize() + 1 < GetMaxSize());
         increaseSize(1);
         array.add(0, pair);

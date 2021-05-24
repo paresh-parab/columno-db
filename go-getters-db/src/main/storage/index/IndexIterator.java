@@ -1,11 +1,6 @@
-package main.storage.index;
+package main.storage;
 
-import main.buffer.BufferPoolManager;
-import main.storage.page.Page;
-import main.common.Pair;
-import main.storage.page.BPlusTreeLeafPage;
-
-import static main.common.Constants.INVALID_PAGE_ID;
+import static main.storage.Constants.INVALID_PAGE_ID;
 
 public class IndexIterator {
     private int index;
@@ -22,7 +17,7 @@ public class IndexIterator {
         return (leaf == null);
     }
 
-    Pair getItem() throws Exception {
+    Pair getItem() {
         return leaf.getItem(index);
     }
 
