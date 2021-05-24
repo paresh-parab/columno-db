@@ -1,12 +1,8 @@
-package main.storage.page;
-
-import main.buffer.BufferPoolManager;
-import main.storage.index.IndexPageType;
-import main.common.Pair;
+package main.storage;
 
 import java.util.List;
 
-import static main.common.Constants.INVALID_PAGE_ID;
+import static main.storage.Constants.INVALID_PAGE_ID;
 
 public class BPlusTreePage<KeyType, ValueType> {
 

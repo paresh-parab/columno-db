@@ -1,7 +1,4 @@
-package main.storage.page;
-
-import main.common.Pair;
-import main.common.Ref;
+package main.storage;
 
 public class HeaderPage extends Page {
 
