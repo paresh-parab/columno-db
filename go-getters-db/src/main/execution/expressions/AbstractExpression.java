@@ -1,5 +1,7 @@
 package main.execution.expressions;
 
+import main.catalog.Schema;
+import main.storage.table.Tuple;
 import main.type.TypeID;
 import main.type.Value;
 

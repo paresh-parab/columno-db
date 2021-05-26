@@ -1,4 +1,4 @@
-package main.storage;
+package main.common;
 
 public class Pair<K, V> {
 

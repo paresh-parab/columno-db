@@ -1,4 +1,4 @@
-package main.storage;
+package main.storage.page;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,13 +6,14 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static main.storage.Constants.PAGE_SIZE;
-
-public class Page<KeyType, ValueType> {
+public class Page<T> {
 
     private int count;
-    private List<Pair<KeyType, ValueType>> data;
+    private List<T> data;
+
     private int pageID;
+    private int nextPageID;
+
     int pinCount;
     boolean isDirty;
 
@@ -22,28 +23,16 @@ public class Page<KeyType, ValueType> {
             = rwlatch.writeLock();
     private final Lock readLock = rwlatch.readLock();
 
-    private void resetMemory(){
-        data = new ArrayList<>();
-        for(int i=0; i< PAGE_SIZE; i++){
-            data.add( new Pair<>()) ;
-        }
-    }
 
-    public void addEntry(Pair p, int index){
-        data.get(index).setKey((KeyType) p.getKey());
-        data.get(index).setValue((ValueType) p.getValue());
-    }
-
-    public void removeEntry(int index){
-        data.remove(index);
-        data.add(new Pair<>());
+    public void resetMemory(){
+        data = new ArrayList<T>();
     }
 
     public Page() {
         resetMemory();
     }
 
-    public List<Pair<KeyType, ValueType>> getData() {
+    public List<T> getData() {
         return data;
     }
 
@@ -57,6 +46,10 @@ public class Page<KeyType, ValueType> {
 
     public int getPageID() {
         return pageID;
+    }
+
+    public void setPageID(int pageID) {
+        this.pageID  = pageID;
     }
 
     public int getPinCount() {
@@ -79,10 +72,12 @@ public class Page<KeyType, ValueType> {
         readLock.lock();
     }
 
-//    public int getLSN() {
-//        return (int) getData()[4];
-//    }
-//    public void SetLSN(Integer lsn) {
-//        lsn = (int)getData()[4];
-//    }
+    public int getNextPageID() {
+        return nextPageID;
+    }
+
+    public void setNextPageID(int nextPageID) {
+        this.nextPageID = nextPageID;
+    }
+
 }

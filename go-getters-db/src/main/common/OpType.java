@@ -1,4 +1,4 @@
-package main.storage;
+package main.common;
 
 public enum OpType {
     READ, WRITE, INSERT, DELETE

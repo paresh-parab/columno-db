@@ -1,5 +1,7 @@
 package main.execution.plans;
 
+import main.catalog.Schema;
+
 import java.util.ArrayList;
 import java.util.List;
 

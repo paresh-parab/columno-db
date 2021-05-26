@@ -1,5 +1,7 @@
 package main.execution.expressions;
 
+import main.catalog.Schema;
+import main.storage.table.Tuple;
 import main.type.TypeID;
 import main.type.Value;
 
@@ -65,7 +67,7 @@ public class ComparisonExpression extends AbstractExpression {
             System.out.println(e.getStackTrace());
             System.exit(0);
         }
-
+        return false;
     }
 
 

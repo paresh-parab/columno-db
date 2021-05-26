@@ -1,8 +1,13 @@
-package main.storage;
+package main.storage.index;
 
-import static main.storage.Constants.INVALID_PAGE_ID;
+import main.buffer.BufferPoolManager;
+import main.common.Pair;
+import main.storage.page.BPlusTreeLeafPage;
+import main.storage.page.Page;
 
-public class IndexIterator {
+import static main.common.Constants.INVALID_PAGE_ID;
+
+public class IndexIterator<KeyType, ValueType> {
     private int index;
     private BPlusTreeLeafPage leaf;
     private BufferPoolManager bufferPoolManager;
@@ -29,7 +34,7 @@ public class IndexIterator {
             if (next == INVALID_PAGE_ID) {
                 leaf = null;
             } else {
-                Page page = bufferPoolManager.fetchPage(next);
+                Page<Pair<KeyType, ValueType>> page = bufferPoolManager.fetchPage(next);
                 page.rLatch();
                 leaf = new BPlusTreeLeafPage(page);
                 index = 0;
