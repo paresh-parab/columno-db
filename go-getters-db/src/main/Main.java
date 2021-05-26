@@ -1,9 +1,13 @@
 package main;
 
-public class Main {
+import main.hash.ExtendibleHash;
 
-    public static void main(String[] args) {
-	// write your code here
-        System.out.println("Hello");
+public class Main
+{
+
+    public static void main(String[] args)
+    {
+        ExtendibleHash<Integer, String> ehash = new ExtendibleHash<>(2);
+        ehash.insert(1, "a");
     }
 }

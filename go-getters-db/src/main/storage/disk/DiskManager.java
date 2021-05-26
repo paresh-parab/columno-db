@@ -5,15 +5,15 @@ import main.storage.page.Page;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static java.lang.System.exit;
 import static main.common.Constants.PAGE_SIZE;
 
 
-public class DiskManager
+public class DiskManager<T>
 {
     private int numFlushes = 0, numWrites = 0;
     private boolean flushLog = false;
@@ -25,7 +25,7 @@ public class DiskManager
     AtomicInteger nextPageID = new AtomicInteger(); //Maybe needs initialization
     Future<Void> flushLogF;
 
-    DiskManager(String dbFile)
+    public DiskManager(String dbFile)
     {
         int n = dbFile.lastIndexOf('.');
 
@@ -41,19 +41,17 @@ public class DiskManager
             if (flag)
             {
                 System.out.println("Log File created successfully");
-                // LOG_DEBUG("Log File created successfully");
             }
             else
             {
                 System.out.println("Log File already present");
-                // LOG_DEBUG("Log File already present");
             }
         }
         catch (IOException e)
         {
-            System.out.println("Cannot open log file");
-            // LOG_DEBUG("Cannot open log file");
+            System.out.println("Exception: Cannot open log file");
             e.printStackTrace();
+            exit(1);
         }
 
         try
@@ -64,23 +62,21 @@ public class DiskManager
             if (flag)
             {
                 System.out.println("DB File created successfully");
-                // LOG_DEBUG("DB File created successfully");
             }
             else
             {
                 System.out.println("DB File already present");
-                // LOG_DEBUG("DB File already present");
             }
         }
         catch (IOException e)
         {
-            System.out.println("Cannot open DB file");
-            // LOG_DEBUG("Cannot open DB file");
+            System.out.println("Exception: Cannot open DB file");
             e.printStackTrace();
+            exit(1);
         }
     }
 
-    public void writePage(int pageID, List<Page> pageData)
+    public void writePage(int pageID, String pageData)
     {
         int offset = pageID * PAGE_SIZE;
         numWrites += 1;
@@ -94,13 +90,13 @@ public class DiskManager
         }
         catch (IOException e)
         {
-            System.out.println("Unable to write to page");
-            // LOG_DEBUG("Unable to write to page");
+            System.out.println("Exception: Unable to write to page");
             e.printStackTrace();
+            exit(1);
         }
     }
 
-    public void readPage(int pageID, List<Page> pageData)
+    public void readPage(int pageID, String pageData)
     {
         int offset = pageID * PAGE_SIZE;
         numWrites = getNumWrites();
@@ -108,8 +104,7 @@ public class DiskManager
 
         if (offset > dbIO.length())
         {
-            // LOG_DEBUG("I/O error reading past end of file");
-            System.out.println("I/O error reading past end of file");
+            System.out.println("Exception: I/O error reading past end of file");
         }
         else
         {
@@ -121,9 +116,9 @@ public class DiskManager
             }
             catch (IOException e)
             {
-                System.out.println("I/O error while reading");
-                // LOG_DEBUG("I/O error while reading");
+                System.out.println("Exception: I/O error while reading");
                 e.printStackTrace();
+                exit(1);
             }
         }
     }
@@ -141,9 +136,8 @@ public class DiskManager
         catch (IOException e)
         {
             System.out.println("I/O error while reading log");
-            // LOG_DEBUG("I/O error while reading log");
             e.printStackTrace();
-            return false;
+            exit(1);
         }
 
         return true;
@@ -175,9 +169,9 @@ public class DiskManager
         }
         catch (Exception e)
         {
-            System.out.println("I/O error while writing log");
+            System.out.println("Exception: I/O error while writing log");
             e.printStackTrace();
-            // LOG_DEBUG("I/O error while writing log");
+            exit(1);
         }
     }
 
@@ -194,5 +188,4 @@ public class DiskManager
     void setFlushLogFuture(Future<Void> flushLogFuture) { flushLogF = flushLogFuture; }
 
     boolean hasFlushLogFuture() { return flushLogF == null; }
-
 }

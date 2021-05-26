@@ -4,8 +4,6 @@ import main.common.Constants;
 import main.hash.ExtendibleHash;
 import main.hash.HashTable;
 import main.storage.disk.DiskManager;
-import main.storage.disk.LRUReplacer;
-import main.storage.disk.Replacer;
 import main.storage.page.Page;
 
 import java.util.ArrayList;
@@ -13,19 +11,19 @@ import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class BufferPoolManager<KeyType, ValueType>
+public class BufferPoolManager<T>
 {
     private final DiskManager diskManager;
-    private final HashTable<Integer, Page> pageTable; // to keep track of pages
-    private final Replacer<Page> replacer;   // to find an unpinned page for replacement
-    private final ArrayList<Page> freeList; // to find a free page for replacement
+    private final HashTable<Integer, Page<T>> pageTable; // to keep track of pages
+    private final Replacer<Page<T>> replacer;   // to find an unpinned page for replacement
+    private final ArrayList<Page<T>> freeList; // to find a free page for replacement
     private final Lock mutex = new ReentrantLock(true); // to protect shared data structure
 
     public BufferPoolManager(int poolSize, DiskManager diskManager)
     {
         // number of pages in buffer pool
         this.diskManager = diskManager;
-        ArrayList<Page> pages = new ArrayList<>(poolSize);
+        ArrayList<Page<T>> pages = new ArrayList<>(poolSize);
         pageTable = new ExtendibleHash<>(Constants.BUCKET_SIZE);
         replacer = new LRUReplacer<>();
         freeList = new ArrayList<>();
@@ -35,9 +33,9 @@ public class BufferPoolManager<KeyType, ValueType>
 
     }
 
-    private Page getVictimPage()
+    private Page<T> getVictimPage()
     {
-        Page tar = null;
+        Page<T> tar = null;
 
         if (freeList.isEmpty())
         {
@@ -55,12 +53,13 @@ public class BufferPoolManager<KeyType, ValueType>
         assert(Objects.requireNonNull(tar).getPinCount() == 0); return tar;
     }
 
-    public Page fetchPage(ValueType pageID)
+    public Page<T> fetchPage(int pageID)
     {
-        mutex.lock(); Page tar = null;
+        mutex.lock();
+        Page<T> tar = null;
         try
         {
-            if (pageTable.find((Integer) pageID, tar))
+            if (pageTable.find(pageID, tar))
             {
                 assert false;
                 tar.pinCount++;
@@ -72,16 +71,16 @@ public class BufferPoolManager<KeyType, ValueType>
 
             if (tar == null) return tar;
 
-            if (tar.isDirty) diskManager.writePage(tar.getPageID(), tar.getData());
+            if (tar.isDirty) diskManager.writePage(tar.getPageID(), tar.getStringData());
 
             pageTable.remove(tar.getPageID());
-            pageTable.insert((Integer) pageID, tar);
+            pageTable.insert(pageID, tar);
 
-            diskManager.readPage((Integer) pageID, tar.getData());
+            diskManager.readPage(pageID, tar.getStringData());
 
             tar.pinCount = 1;
             tar.isDirty = false;
-            tar.setPageID((Integer) pageID);
+            tar.setPageID((pageID);
             mutex.unlock();
         }
         catch (Exception e)
@@ -93,12 +92,12 @@ public class BufferPoolManager<KeyType, ValueType>
         return tar;
     }
 
-    public void unpinPage(ValueType pageID, boolean isDirty)
+    public void unpinPage(int pageID, boolean isDirty)
     {
-        mutex.lock(); Page tar = null;
+        mutex.lock(); Page<T> tar = null;
         try
         {
-            pageTable.find((Integer) pageID, tar);
+            pageTable.find(pageID, tar);
 
             assert false; tar.isDirty = isDirty;
 
@@ -118,7 +117,8 @@ public class BufferPoolManager<KeyType, ValueType>
 
     public boolean flushPage(int pageID)
     {
-        mutex.lock(); Page tar = null;
+        mutex.lock();
+        Page<T> tar = null;
         try
         {
             pageTable.find(pageID, tar);
@@ -128,7 +128,7 @@ public class BufferPoolManager<KeyType, ValueType>
 
             if (tar.isDirty)
             {
-                diskManager.writePage(pageID, tar.getData());
+                diskManager.writePage(pageID, tar.getStringData());
                 tar.isDirty = false;
             }
             mutex.unlock(); return true;
@@ -142,9 +142,10 @@ public class BufferPoolManager<KeyType, ValueType>
         }
     }
 
-    public Page newPage(int rootPageID)
+    public Page<T> newPage(int rootPageID)
     {
-        mutex.lock(); Page tar = null;
+        mutex.lock();
+        Page<T> tar = null;
         try
         {
             tar = getVictimPage();
@@ -153,7 +154,7 @@ public class BufferPoolManager<KeyType, ValueType>
 
             int pageID = diskManager.allocatePage();
 
-            if (tar.isDirty) diskManager.writePage(tar.getPageID(), tar.getData());
+            if (tar.isDirty) diskManager.writePage(tar.getPageID(), tar.getStringData());
 
             pageTable.remove(tar.getPageID());
             pageTable.insert(pageID, tar);
@@ -176,7 +177,7 @@ public class BufferPoolManager<KeyType, ValueType>
 
     boolean DeletePage(int pageID)
     {
-        mutex.lock(); Page tar = null;
+        mutex.lock(); Page<T> tar = null;
         try
         {
             pageTable.find(pageID, tar);

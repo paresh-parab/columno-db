@@ -1,10 +1,10 @@
 package main.storage.page;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+        import java.util.ArrayList;
+        import java.util.List;
+        import java.util.concurrent.locks.Lock;
+        import java.util.concurrent.locks.ReadWriteLock;
+        import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Page<T> {
 
@@ -14,8 +14,8 @@ public class Page<T> {
     private int pageID;
     private int nextPageID;
 
-    int pinCount;
-    boolean isDirty;
+    public int pinCount;
+    public boolean isDirty;
 
     private final ReadWriteLock rwlatch
             = new ReentrantReadWriteLock();
@@ -80,4 +80,14 @@ public class Page<T> {
         this.nextPageID = nextPageID;
     }
 
+    public String getStringData()
+    {
+        StringBuilder stringData = new StringBuilder();
+
+        for (int i = 0; i < PAGE_SIZE; i++)
+        {
+            stringData.append(data.get(i).getClass().toString());
+        }
+        return stringData.toString();
+    }
 }

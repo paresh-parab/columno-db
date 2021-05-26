@@ -1,4 +1,4 @@
-package main.storage.disk;
+package main.buffer;
 
 import java.util.HashMap;
 import java.util.concurrent.locks.Lock;
@@ -17,11 +17,37 @@ public class LRUReplacer<T> extends Replacer<T>
         public Node<T> next;
     }
 
-    private Node<T> head;
-    private Node<T> tail;
-    private HashMap<T, Node<T>> map;
+    private int maxSize = 1000;
+    private final Node<T> head = new Node<>();
+    private final Node<T> tail = new Node<>();
+    private final HashMap<T, Node<T>> map = new HashMap<>();
     private final Lock mutex = new ReentrantLock(true);
 
+    public LRUReplacer()
+    {
+        head.next = tail;
+        tail.prev = head;
+    }
+
+    public LRUReplacer(int maxSize)
+    {
+        this();
+        this.maxSize = maxSize;
+    }
+
+    @Override
+    public boolean pin(T frameID)
+    {
+        return erase(frameID);
+    }
+
+    @Override
+    public void unpin(T frameID)
+    {
+        if(!map.containsKey(frameID)) insert(frameID);
+    }
+
+    @Override
     public void insert(T value)
     {
         mutex.lock();
@@ -49,34 +75,54 @@ public class LRUReplacer<T> extends Replacer<T>
 
         mutex.unlock();
     }
-    public void victim(T value)
+
+    @Override
+    public T victim(T value)
     {
-        mutex.lock();
+        try
+        {
+            mutex.lock();
 
-        if (map.isEmpty()) return;
+            Node<T> last = tail.prev;
+            tail.prev = last.prev;
+            last.prev.next = tail;
 
-        Node<T> last = tail.prev;
-        tail.prev = last.prev;
-        last.prev.next = tail;
-        map.remove(last.value);
+            T val = last.value;
+            map.remove(last.value);
 
-        mutex.unlock();
+            mutex.unlock();
+            return val;
+        }
+        catch (Exception e)
+        {
+            System.out.println("Exception: Error in getting the victim");
+            return value;
+        }
     }
 
-    public void erase(T value)
+    @Override
+    public boolean erase(T value)
     {
         mutex.lock();
+
         if (map.containsKey(value))
         {
             Node<T> current = map.get(value);
             current.prev.next = current.next;
             current.next.prev = current.prev;
-        }
-        map.remove(value);
+            map.remove(value);
 
-        mutex.unlock();
+            mutex.unlock();
+            return true;
+        }
+        else
+        {
+            mutex.unlock();
+            return false;
+        }
     }
 
+    @Override
     public int size()
     {
         mutex.lock();
