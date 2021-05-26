@@ -1,5 +1,6 @@
 package main.execution.plans;
 
+import main.catalog.Schema;
 import main.execution.expressions.AbstractExpression;
 
 import java.util.ArrayList;
@@ -13,8 +14,8 @@ public class AggregationPlanNode extends AbstractPlanNode {
     List<AggregationType> aggTypes;
 
     public AggregationPlanNode(Schema output_schema, AbstractPlanNode child, AbstractExpression having,
-                        List<AbstractExpression> group_bys,
-                        List<AbstractExpression> aggregates, List<AggregationType> agg_types){
+                               List<AbstractExpression> group_bys,
+                               List<AbstractExpression> aggregates, List<AggregationType> agg_types){
         super(output_schema, new ArrayList<AbstractPlanNode>(){{
             add(child);
         }});

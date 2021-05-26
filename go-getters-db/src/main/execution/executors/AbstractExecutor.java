@@ -1,6 +1,8 @@
 package main.execution.executors;
 
+import main.catalog.Schema;
 import main.execution.ExecutorContext;
+import main.storage.table.Tuple;
 
 public abstract class AbstractExecutor {
     private ExecutorContext exeContext;

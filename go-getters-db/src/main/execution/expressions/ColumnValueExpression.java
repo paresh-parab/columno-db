@@ -1,5 +1,7 @@
 package main.execution.expressions;
 
+import main.catalog.Schema;
+import main.storage.table.Tuple;
 import main.type.TypeID;
 import main.type.Value;
 
@@ -18,12 +20,12 @@ public class ColumnValueExpression extends AbstractExpression{
 
     @Override
     public Value evaluate(Tuple tuple, Schema schema)  {
-        return tuple.getValue(schema, colIdx);
+        return tuple.getValue(colIdx);
     }
 
     @Override
     public Value evaluateJoin(Tuple leftTuple, Schema leftSchema, Tuple rightTuple, Schema rightSchema)  {
-        return tupleIdx == 0 ? leftTuple.getValue(leftSchema, colIdx) : rightTuple.getValue(rightSchema, colIdx);
+        return tupleIdx == 0 ? leftTuple.getValue(colIdx) : rightTuple.getValue(colIdx);
     }
 
     @Override

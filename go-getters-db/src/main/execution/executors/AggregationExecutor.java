@@ -1,16 +1,16 @@
 package main.execution.executors;
 
-import main.edu.uci.db.execution.ExecutorContext;
-import main.edu.uci.db.execution.expressions.AbstractExpression;
-import main.edu.uci.db.execution.expressions.AggregateValueExpression;
-import main.edu.uci.db.execution.plans.AggregationPlanNode;
-import main.edu.uci.db.execution.plans.AggregationType;
+import main.catalog.Column;
+import main.catalog.Schema;
+import main.execution.expressions.AggregateValueExpression;
+import main.execution.ExecutorContext;
+import main.execution.expressions.AbstractExpression;
+import main.execution.plans.AggregationPlanNode;
+import main.execution.plans.AggregationType;
+import main.storage.table.Tuple;
 import main.type.Value;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AggregationExecutor extends AbstractExecutor {
 
@@ -216,10 +216,10 @@ public class AggregationExecutor extends AbstractExecutor {
             if ((this.plan.getHaving() == null) ||
             (this.plan.getHaving().evaluateAggregate(key.groupBys, val.aggregates).getAsBoolean())) {
                 List<Value> result = new ArrayList<>();
-                for ( column : this.getOutputSchema().getColumns() ) {
+                for ( Column column : this.getOutputSchema().getColumns() ) {
                     result.add(column.getExpr().evaluateAggregate(key.groupBys, val.aggregates));
                 }
-            tuple[0] = new Tuple(result, this.getOutputSchema());
+            tuple[0] = new Tuple(Collections.singletonList(result));
                 return true;
             }
         }

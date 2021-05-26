@@ -1,7 +1,11 @@
 package main.execution.executors;
 
+import main.catalog.Catalog;
+import main.catalog.Schema;
 import main.execution.ExecutorContext;
 import main.execution.plans.InsertPlanNode;
+import main.storage.table.TableHeap;
+import main.storage.table.Tuple;
 
 public class InsertExecutor extends AbstractExecutor {
 
@@ -24,8 +28,8 @@ public class InsertExecutor extends AbstractExecutor {
 
         @Override
         public void init() {
-                SimpleCatalog catalog = this.getExecutorContext().getCatalog();
-                this.table = catalog.getTable(this.plan.getTableOID()).table.get();
+                Catalog catalog = this.getExecutorContext().getCatalog();
+                this.table = catalog.getTable(this.plan.getTableOID()).getTable();
                 // Initialize all children
                 if (!this.plan.isRawInsert()) {
                         this.childExe.init();
@@ -35,13 +39,12 @@ public class InsertExecutor extends AbstractExecutor {
         @Override
         public boolean next(Tuple[] tuples ) {
                 // is raw insert -> get all raw tuples and insert
-                RID rid;
                 Tuple tuple = null;
                 if (this.plan.isRawInsert()) {
                         int numberOfTups = this.plan.getRawValues().size();
                         for (int idx = 0; idx < numberOfTups; idx++) {
-                                tuple = new Tuple(this.plan.rawValuesAt(idx), this.getOutputSchema());
-                                boolean success = this.table.insertTuple(tuple, rid, this.getExecutorContext().getTransaction());
+                                tuple = new Tuple(this.plan.rawValuesAt(idx));
+                                boolean success = this.table.insertTuple(tuple);
                                 // LOG_DEBUG("Insert tuple successfully: %s", tuple.ToString(this->GetOutputSchema()).c_str());
                                 if (!success) return success;
                         }
@@ -51,7 +54,7 @@ public class InsertExecutor extends AbstractExecutor {
                 // get tuples from child executor, and then insert them
                 while (this.childExe.next(tuples)) {
                         // LOG_DEBUG("Read tuple: %s", tuple.ToString(this->GetOutputSchema()).c_str());
-                        boolean success = this.table.insertTuple(tuple, rid, this.getExecutorContext().getTransaction());
+                        boolean success = this.table.insertTuple(tuple);
                         if (!success) return success;
                 }
                 return true;
@@ -59,8 +62,8 @@ public class InsertExecutor extends AbstractExecutor {
 
         @Override
         public Schema getOutputSchema() {
-                SimpleCatalog catalog = this.getExecutorContext().getCatalog();
-                return catalog.getTable(this.plan.getTableOID()).schema;
+                Catalog catalog = this.getExecutorContext().getCatalog();
+                return catalog.getTable(this.plan.getTableOID()).getSchema();
         }
 
 }
