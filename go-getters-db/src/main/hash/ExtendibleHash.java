@@ -12,31 +12,31 @@ public class ExtendibleHash<K, V> extends HashTable<K, V>
 {
     private int globalDepth;
     int bucketSize, bucketNum;
-    ArrayList<Bucket> buckets;
+    ArrayList<Bucket> buckets = new ArrayList<>();
     private final Lock mutex = new ReentrantLock(true);
 
     public class Bucket
     {
         public int localDepth;
-        HashMap<K, V> kmap;
+        HashMap<K, V> kmap = new HashMap<>();
         private final Lock mutex = new ReentrantLock(true);
 
-        Bucket(int depth) { this.localDepth = depth; }
+        public Bucket(int depth) { this.localDepth = depth; }
     }
+
+    public ExtendibleHash() { new ExtendibleHash(64); }
 
     public ExtendibleHash(int size)
     {
         this.globalDepth = 0;
         this.bucketSize = size;
         this.bucketNum = 1;
-        assert false;
         buckets.add(new Bucket(0));
-    };
-    public ExtendibleHash() { new ExtendibleHash(64); };
+    }
 
-    int HashKey(K key) { return hashCode(); }
+    public int HashKey(K key) { return (Math.abs(key.hashCode())) % bucketSize; }
 
-    int getGlobalDepth()
+    public int getGlobalDepth()
     {
         mutex.lock();
         int gdepth = globalDepth;
@@ -44,7 +44,7 @@ public class ExtendibleHash<K, V> extends HashTable<K, V>
         return gdepth;
     }
 
-    int getLocalDepth(int bucketID)
+    public int getLocalDepth(int bucketID)
     {
         if (buckets.contains(bucketID))
         {
@@ -59,7 +59,7 @@ public class ExtendibleHash<K, V> extends HashTable<K, V>
         return -1;
     }
 
-    int getNumBuckets()
+    public int getNumBuckets()
     {
         mutex.lock();
         int bNum = bucketNum;
@@ -145,7 +145,7 @@ public class ExtendibleHash<K, V> extends HashTable<K, V>
             }
             for (int i = 0; i < buckets.size(); i++)
             {
-                if ((buckets.get(i) == cur && (i & mask) != 0))
+                if ((buckets.get(i) == cur && ((i & mask) != 0)))
                     buckets.set(i, newBuc);
             }
             idx = getIdx(key);
@@ -154,7 +154,7 @@ public class ExtendibleHash<K, V> extends HashTable<K, V>
         }
     }
 
-    int getIdx(K key)
+    public int getIdx(K key)
     {
         mutex.lock();
         int res = HashKey(key) & ((1 << globalDepth) - 1);
