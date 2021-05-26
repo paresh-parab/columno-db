@@ -11,8 +11,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import static main.common.Constants.HEADER_PAGE_ID;
 import static main.common.Constants.INVALID_PAGE_ID;
-import static main.common.OpType.*;
 
 public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
 
@@ -38,18 +38,14 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     }
 
     // Returns true if this B+ tree has no keys and values.
-    boolean isEmpty() {
+    public boolean isEmpty() {
         return rootPageID == INVALID_PAGE_ID;
     };
 
     // return the value associated with a given key
-    boolean getValue(KeyType key, List<ValueType> result) throws Exception {
-        return this.getValue(key, result, null);
-    }
-
-    boolean getValue(KeyType key, List<ValueType> result, Transaction transaction) throws Exception {
+    public boolean getValue(KeyType key, List<ValueType> result) {
         //step 1. find page
-        BPlusTreeLeafPage tar = findLeafPage(key,false, READ,transaction);
+        BPlusTreeLeafPage tar = findLeafPage(key,false, OpType.READ);
         if (tar == null)
             return false;
         //step 2. find value
@@ -57,18 +53,14 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
             result.remove(result.size()-1);
         boolean ret = tar.lookup(key, result.get(0), comparator );
         //step 3. unPin buffer pool
-        freePagesInTransaction(false,transaction,tar.getPageID());
+        /////freePagesInTransaction(false,tar.getPageID());
         buffer_pool_manager.unpinPage(tar.getPageID(), false);
         //assert(buffer_pool_manager_->CheckAllUnpined());
         return ret;
     }
 
     // Insert a key-value pair into this B+ tree.
-    boolean insert(KeyType key, ValueType value) throws Exception {
-        return this.insert(key, value, null);
-    }
-
-    boolean insert(KeyType key, ValueType value, Transaction transaction) throws Exception {
+    public boolean insert(KeyType key, ValueType value ) {
         lockRootPageID(true);
         if (isEmpty()) {
             startNewTree(key,value);
@@ -76,30 +68,37 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
             return true;
         }
         tryUnlockRootPageID(true);
-        boolean res = insertIntoLeaf(key,value,transaction);
+        boolean res = insertIntoLeaf(key,value);
         //assert(Check());
         return res;
     }
 
-    private void startNewTree(KeyType key, ValueType value) throws Exception {
+    private void startNewTree(KeyType key, ValueType value) {
         //step 1. ask for new page from buffer pool manager
         //buffer pool dependency
-        int newPageID = 0;
-        Page rootPage = buffer_pool_manager.newPage(newPageID);
-        if(rootPage == null)
-            throw new Exception("Unable to create fresh root page");
+        try{
+            int newPageID = 0;
+            Page<Pair<KeyType, ValueType>> rootPage = buffer_pool_manager.newPage(newPageID);
+            if(rootPage == null)
+                throw new Exception("Unable to create fresh root page");
 
-        BPlusTreeLeafPage root = new BPlusTreeLeafPage(rootPage);
+            BPlusTreeLeafPage root = new BPlusTreeLeafPage(rootPage);
 
-        //step 2. update b+ tree's root page id
-        root.init(newPageID, INVALID_PAGE_ID);
-        rootPageID = newPageID;
-        updateRootPageID(true);
+            //step 2. update b+ tree's root page id
+            root.init(newPageID, INVALID_PAGE_ID);
+            rootPageID = newPageID;
+            updateRootPageID(true);
 
-        //step 3. insert entry directly into leaf page.
-        root.insert(key,value,comparator);
+            //step 3. insert entry directly into leaf page.
+            root.insert(key,value,comparator);
 
-        buffer_pool_manager.unpinPage(newPageID, true);
+            buffer_pool_manager.unpinPage(newPageID, true);
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
+        }
+
     }
 
     /*
@@ -110,25 +109,22 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      * @return: since we only support unique key, if user try to insert duplicate
      * keys return false, otherwise return true.
      */
-    private boolean insertIntoLeaf(KeyType key, ValueType value) throws Exception {
-        return this.insertIntoLeaf(key, value, null);
-    }
 
-    private boolean insertIntoLeaf(KeyType key, ValueType value, Transaction transaction) throws Exception {
-        BPlusTreeLeafPage leafPage = findLeafPage(key,false,INSERT,transaction);
+    private boolean insertIntoLeaf(KeyType key, ValueType value ) {
+        BPlusTreeLeafPage leafPage = findLeafPage(key,false, OpType.INSERT);
         boolean exist = leafPage.lookup(key,value,comparator);
         if (exist) {
             //buffer_pool_manager_->UnpinPage(leafPage->GetPageId(), false);
-            freePagesInTransaction(true,transaction);
+            /////freePagesInTransaction(true,transaction);
             return false;
         }
         leafPage.insert(key,value,comparator);
         if (leafPage.getSize() > leafPage.getMaxSize()) {//insert then split
-            BPlusTreeLeafPage newLeafPage = split(leafPage,transaction);//unpin it in below func
-            insertIntoParent(leafPage, (KeyType) newLeafPage.keyAt(0),newLeafPage,transaction);
+            BPlusTreeLeafPage newLeafPage = split(leafPage);//unpin it in below func
+            insertIntoParent(leafPage, (KeyType) newLeafPage.keyAt(0),newLeafPage);
         }
         //buffer_pool_manager_->UnpinPage(leafPage->GetPageId(), true);
-        freePagesInTransaction(true,transaction);
+        /////freePagesInTransaction(true,transaction);
         return true;
     }
 
@@ -140,13 +136,12 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      * of key & value pairs from input page to newly created page
      */
 
-    private BPlusTreeLeafPage  split(BPlusTreeLeafPage node, Transaction transaction) {
+    private BPlusTreeLeafPage  split(BPlusTreeLeafPage node) {
         //step 1 ask for new page from buffer pool manager
         int newPageID = 0;
-        Page newPage = buffer_pool_manager.newPage(newPageID);
+        Page<Pair<KeyType, ValueType>> newPage = buffer_pool_manager.newPage(newPageID);
         //assert(newPage != nullptr);
         newPage.wLatch();
-        transaction.addIntoPageSet(newPage);
         //step 2 move half of key & value pairs from input page to newly created page
         BPlusTreeLeafPage newNode = new BPlusTreeLeafPage(newPage);
         newNode.init(newPageID, node.getParentPageID());
@@ -155,13 +150,12 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         return newNode;
     }
 
-    private BPlusTreeInternalPage split(BPlusTreeInternalPage node, Transaction transaction) {
+    private BPlusTreeInternalPage split(BPlusTreeInternalPage node) {
         //step 1 ask for new page from buffer pool manager
         int newPageID = 0;
-        Page newPage = buffer_pool_manager.newPage(newPageID);
+        Page<Pair<KeyType, ValueType>> newPage = buffer_pool_manager.newPage(newPageID);
         //assert(newPage != nullptr);
         newPage.wLatch();
-        transaction.addIntoPageSet(newPage);
         //step 2 move half of key & value pairs from input page to newly created page
         BPlusTreeInternalPage newNode = new BPlusTreeInternalPage(newPage);
         newNode.init(newPageID, node.getParentPageID());
@@ -180,42 +174,46 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      * recursively if necessary.
      */
 
-    private void insertIntoParent(BPlusTreePage oldNode, KeyType key, BPlusTreePage newNode) throws Exception {
-        insertIntoParent(oldNode, key, newNode, null);
-    }
-
-    private void insertIntoParent(BPlusTreePage oldNode, KeyType key, BPlusTreePage newNode, Transaction transaction) throws Exception {
-        if (oldNode.isRootPage()) {
-            Page newPage = buffer_pool_manager.newPage(rootPageID);
-            if(newPage == null || newPage.getPinCount() == 1){
-                throw new Exception("Unable to create fresh page");
+    private void insertIntoParent(BPlusTreePage oldNode, KeyType key, BPlusTreePage newNode) {
+        try{
+            if (oldNode.isRootPage()) {
+                Page<Pair<KeyType, ValueType>> newPage = buffer_pool_manager.newPage(rootPageID);
+                if(newPage == null || newPage.getPinCount() == 1){
+                    throw new Exception("Unable to create fresh page");
+                }
+                BPlusTreeInternalPage newRoot = new BPlusTreeInternalPage(newPage);
+                newRoot.init(rootPageID);
+                newRoot.populateNewRoot(oldNode.getPageID(), key, newNode.getPageID());
+                oldNode.setParentPageID(rootPageID);
+                newNode.setParentPageID(rootPageID);
+                updateRootPageID();
+                //fetch page and new page need to unpin page
+                //buffer_pool_manager_->UnpinPage(new_node->GetPageId(),true);
+                buffer_pool_manager.unpinPage(newRoot.getPageID(),true);
+                return;
             }
-            BPlusTreeInternalPage newRoot = new BPlusTreeInternalPage(newPage);
-            newRoot.init(rootPageID);
-            newRoot.populateNewRoot(oldNode.getPageID(), key, newNode.getPageID());
-            oldNode.setParentPageID(rootPageID);
-            newNode.setParentPageID(rootPageID);
-            updateRootPageID();
-            //fetch page and new page need to unpin page
+            int parentID = oldNode.getParentPageID();
+            Page<Pair<KeyType, ValueType>> page = fetchPage(parentID);
+            if(page == null)
+                throw new Exception("Unable to create new Page");
+            BPlusTreeInternalPage parent = new BPlusTreeInternalPage(page);
+            newNode.setParentPageID(parentID);
             //buffer_pool_manager_->UnpinPage(new_node->GetPageId(),true);
-            buffer_pool_manager.unpinPage(newRoot.getPageID(),true);
-            return;
+            //insert new node after old node
+            parent.insertNodeAfter(oldNode.getPageID(), key, newNode.getPageID());
+            if (parent.getSize() > parent.getMaxSize()) {
+                //begin /* Split Parent */
+                BPlusTreeInternalPage newLeafPage = split(parent);//new page need unpin
+                insertIntoParent(parent, (KeyType) newLeafPage.keyAt(0),newLeafPage);
+            }
+            buffer_pool_manager.unpinPage(parentID, true);
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
         }
-        int parentID = oldNode.getParentPageID();
-        BPlusTreePage page = fetchPage(parentID);
-        if(page == null)
-            throw new Exception("Unable to create new Page");
-        BPlusTreeInternalPage parent = new BPlusTreeInternalPage(page);
-        newNode.setParentPageID(parentID);
-        //buffer_pool_manager_->UnpinPage(new_node->GetPageId(),true);
-        //insert new node after old node
-        parent.insertNodeAfter(oldNode.getPageID(), key, newNode.getPageID());
-        if (parent.getSize() > parent.getMaxSize()) {
-            //begin /* Split Parent */
-            BPlusTreeInternalPage newLeafPage = split(parent,transaction);//new page need unpin
-            insertIntoParent(parent, (KeyType) newLeafPage.keyAt(0),newLeafPage,transaction);
-        }
-        buffer_pool_manager.unpinPage(parentID, true);
+
+
     }
 
 
@@ -230,17 +228,14 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      * necessary.
      */
 
-    public void remove(KeyType key) throws Exception {
-        remove(key, null);
-    }
-    void remove(KeyType key, Transaction transaction) throws Exception {
+    public  void remove(KeyType key) {
         if (isEmpty()) return;
-        BPlusTreeLeafPage delTar = findLeafPage(key,false, DELETE, transaction);
+        BPlusTreeLeafPage delTar = findLeafPage(key,false, OpType.DELETE);
         int curSize = delTar.removeAndDeleteRecord(key,comparator);
         if (curSize < delTar.getMinSize()) {
-            coalesceOrRedistribute(delTar,transaction);
+            coalesceOrRedistribute(delTar);
         }
-        freePagesInTransaction(true,transaction);
+        /////freePagesInTransaction(true,transaction);
         //assert(Check());
     }
 
@@ -251,21 +246,18 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      * @return: true means target leaf page should be deleted, false means no
      * deletion happens
      */
-    private <N extends BPlusTreePage> boolean coalesceOrRedistribute(N node) throws Exception {
-        return coalesceOrRedistribute(node, null);
-    }
-    private <N extends BPlusTreePage> boolean coalesceOrRedistribute(N node, Transaction transaction) throws Exception {
+
+    private <N extends BPlusTreePage> boolean coalesceOrRedistribute(N node) {
         //if (N is the root and N has only one remaining child)
         if (node.isRootPage()) {
             boolean delOldRoot = adjustRoot(node);//make the child of N the new root of the tree and delete N
-            if (delOldRoot) {transaction.addIntoDeletedPageSet(node.getPageID());}
             return delOldRoot;
         }
         //Let N2 be the previous or next child of parent(N)
         N node2 = null;
-        boolean isRightSib = findLeftSibling(node,node2,transaction);
-        BPlusTreePage parent = fetchPage(node.getParentPageID());
-        BPlusTreeInternalPage parentPage = (BPlusTreeInternalPage)parent;
+        boolean isRightSib = findLeftSibling(node,node2);
+        Page<Pair<KeyType, ValueType>> parent = fetchPage(node.getParentPageID());
+        BPlusTreeInternalPage parentPage = new BPlusTreeInternalPage(parent);
         //if (entries in N and N2 can fit in a single node)
         if (node.getSize() + node2.getSize() <= node.getMaxSize()) {
             if (isRightSib) {
@@ -277,7 +269,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
             }
 
             int removeIndex = parentPage.valueIndex(node.getPageID());
-            coalesce(node2,node,parentPage,removeIndex,transaction);//unpin node,node2
+            coalesce(node2,node,parentPage,removeIndex);//unpin node,node2
             buffer_pool_manager.unpinPage(parentPage.getPageID(), true);
             return true;
         }
@@ -289,15 +281,15 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     }
 
 
-    private <N extends BPlusTreePage> boolean findLeftSibling(N node, N sibling, Transaction transaction) throws Exception {
-        BPlusTreePage page = fetchPage(node.getParentPageID());
-        BPlusTreeInternalPage parent = (BPlusTreeInternalPage) page;
+    private <N extends BPlusTreePage> boolean findLeftSibling(N node, N sibling) {
+        Page<Pair<KeyType, ValueType>> page = fetchPage(node.getParentPageID());
+        BPlusTreeInternalPage parent = new BPlusTreeInternalPage(page);
         int index = parent.valueIndex(node.getPageID());
         int siblingIndex = index - 1;
         if (index == 0) { //no left sibling
             siblingIndex = index + 1;
         }
-        sibling = (N) crabingProtocalFetchPage((Integer) parent.valueAt(siblingIndex), DELETE,-1,transaction);
+        sibling = (N) crabingProtocalFetchPage((Integer) parent.valueAt(siblingIndex), OpType.DELETE,-1);
         buffer_pool_manager.unpinPage(parent.getPageID(), false);
         return index == 0;//index == 0 means sibling is right
     }
@@ -314,24 +306,25 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      * @return  true means parent node should be deleted, false means no deletion
      * happend
      */
-    private  <N extends BPlusTreePage> boolean coalesce( N neighbor_node, N node, BPlusTreeInternalPage<KeyType,Integer, KeyComparator> parent,
-                                                        int index ) throws Exception{
-        return coalesce(neighbor_node, node, parent, index, null);
-    }
-
-    private  <N extends BPlusTreePage> boolean coalesce( N neighbor_node, N node, BPlusTreeInternalPage<KeyType,Integer, KeyComparator> parent,
-                                               int index, Transaction transaction) throws Exception {
+    private  <N extends BPlusTreePage> boolean coalesce( N neighborNode, N node, BPlusTreeInternalPage<KeyType,Integer, KeyComparator> parent,
+                                               int index) {
         //assumption neighbor_node is before node
-        if(node.getSize() + neighbor_node.getSize() > node.getMaxSize())
-            throw new Exception("Unable to coalesce");
-        //move later one to previous one
-        node.moveAllTo(neighbor_node,index,buffer_pool_manager);
-        transaction.addIntoDeletedPageSet(node.getPageID());
-        parent.remove(index);
-        if (parent.getSize() <= parent.getMinSize()) {
-            return coalesceOrRedistribute(parent,transaction);
+        try{
+            if(node.getSize() + neighborNode.getSize() > node.getMaxSize())
+                throw new Exception("Unable to coalesce");
+            //move later one to previous one
+            node.moveAllTo(neighborNode,index,buffer_pool_manager);
+            parent.remove(index);
+            if (parent.getSize() <= parent.getMinSize()) {
+                return coalesceOrRedistribute(parent);
+            }
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
         }
         return false;
+
     }
 
 
@@ -362,28 +355,36 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      * @return : true means root page should be deleted, false means no deletion
      * happend
      */
-    private boolean adjustRoot(BPlusTreePage oldRootNode) throws Exception {
-        if (oldRootNode.isLeafPage()) {// case 2
-            if(oldRootNode.getSize() != 0 || oldRootNode.getParentPageID() != INVALID_PAGE_ID)
-                throw new Exception("Unable to adjust the root");
-            rootPageID = INVALID_PAGE_ID;
-            updateRootPageID();
-            return true;
-        }
-        if (oldRootNode.getSize() == 1) {// case 1
-            BPlusTreeInternalPage root = (BPlusTreeInternalPage) oldRootNode;
-            int newRootId = (int) root.removeAndReturnOnlyChild();
-            rootPageID = newRootId;
-            updateRootPageID();
-            // set the new root's parent id "INVALID_PAGE_ID"
-            Page page = buffer_pool_manager.fetchPage(newRootId);
-            //assert(page != nullptr);
-            BPlusTreeInternalPage newRoot = new BPlusTreeInternalPage(page);
-            newRoot.setParentPageID(INVALID_PAGE_ID);
-            buffer_pool_manager.unpinPage(newRootId, true);
-            return true;
+    private boolean adjustRoot(BPlusTreePage oldRootNode) {
+        try{
+            if (oldRootNode.isLeafPage()) {// case 2
+                if(oldRootNode.getSize() != 0 || oldRootNode.getParentPageID() != INVALID_PAGE_ID)
+                    throw new Exception("Unable to adjust the root");
+                rootPageID = INVALID_PAGE_ID;
+                updateRootPageID();
+                return true;
+            }
+            if (oldRootNode.getSize() == 1) {// case 1
+                BPlusTreeInternalPage root = (BPlusTreeInternalPage) oldRootNode;
+                int newRootId = (int) root.removeAndReturnOnlyChild();
+                rootPageID = newRootId;
+                updateRootPageID();
+                // set the new root's parent id "INVALID_PAGE_ID"
+                Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(newRootId);
+                //assert(page != nullptr);
+                BPlusTreeInternalPage newRoot = new BPlusTreeInternalPage(page);
+                newRoot.setParentPageID(INVALID_PAGE_ID);
+                buffer_pool_manager.unpinPage(newRootId, true);
+                return true;
+            }
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
         }
         return false;
+
+
     }
 
     /*****************************************************************************
@@ -395,14 +396,14 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      * @return : index iterator
      */
 
-    IndexIterator begin() {
+    public IndexIterator begin() {
         KeyType useless = null;
         BPlusTreeLeafPage start_leaf = findLeafPage(useless, true);
         tryUnlockRootPageID(false);
         return new IndexIterator(start_leaf, 0, buffer_pool_manager);
     }
 
-    IndexIterator begin(KeyType key) {
+    public IndexIterator begin(KeyType key) {
         BPlusTreeLeafPage startLeaf = findLeafPage(key);
         tryUnlockRootPageID(false);
         if (startLeaf == null) {
@@ -420,17 +421,16 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      * the left most leaf page
      */
 
-    BPlusTreeLeafPage findLeafPage(KeyType key) throws Exception{
-        return this.findLeafPage(key, false, READ, null);
+    public BPlusTreeLeafPage findLeafPage(KeyType key){
+        return this.findLeafPage(key, false, OpType.READ);
     }
 
-    BPlusTreeLeafPage findLeafPage(KeyType key, boolean leftMost) throws Exception {
-        return this.findLeafPage(key, leftMost, READ, null);
+    public BPlusTreeLeafPage findLeafPage(KeyType key, boolean leftMost) {
+        return this.findLeafPage(key, leftMost, OpType.READ);
     }
 
-    BPlusTreeLeafPage findLeafPage(KeyType key, boolean leftMost, OpType op,
-                                                             Transaction transaction) throws Exception {
-        boolean exclusive = (op != READ);
+    public BPlusTreeLeafPage findLeafPage(KeyType key, boolean leftMost, OpType op ) {
+        boolean exclusive = (op != OpType.READ);
         lockRootPageID(exclusive);
         if (isEmpty()) {
             tryUnlockRootPageID(exclusive);
@@ -438,11 +438,11 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         }
         //, you need to first fetch the page from buffer pool using its unique page_id, then reinterpret cast to either
         // a leaf or an internal page, and unpin the page after any writing or reading operations.
-        BPlusTreePage pointer =  crabingProtocalFetchPage(rootPageID,op,-1,transaction);
+        BPlusTreePage pointer =  crabingProtocalFetchPage(rootPageID,op,-1);
         int next;
         for (int cur = rootPageID;
              !pointer.isLeafPage();
-             pointer = (BPlusTreeLeafPage) crabingProtocalFetchPage(next,op,cur,transaction),cur = next) {
+             pointer = (BPlusTreeLeafPage) crabingProtocalFetchPage(next,op,cur),cur = next) {
             BPlusTreeInternalPage internalPage = (BPlusTreeInternalPage) pointer;
             if (leftMost) {
                 next = (int) internalPage.valueAt(0);
@@ -453,51 +453,19 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         return (BPlusTreeLeafPage) pointer;
     }
 
-    private BPlusTreePage fetchPage(int page_id) {
-        Page page = buffer_pool_manager.fetchPage(page_id);
-        return new BPlusTreePage(page);
+    private Page<Pair<KeyType, ValueType>> fetchPage(int page_id) {
+        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(page_id);
+        return page;
     }
 
 
-    private BPlusTreePage crabingProtocalFetchPage(int page_id, OpType op, int previous, Transaction transaction) throws Exception {
-        boolean exclusive = op != READ;
-        Page page = buffer_pool_manager.fetchPage(page_id);
+    private BPlusTreePage crabingProtocalFetchPage(int page_id, OpType op, int previous) {
+        boolean exclusive = op != OpType.READ;
+        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(page_id);
         lock(exclusive,page);
         BPlusTreePage treePage = new BPlusTreePage(page);
-        if (previous > 0 && (!exclusive || treePage.isSafe(op))) {
-            freePagesInTransaction(exclusive,transaction,previous);
-        }
-        if (transaction != null)
-            transaction.addIntoPageSet(page);
+
         return treePage;
-    }
-
-    private void freePagesInTransaction(boolean exclusive, Transaction transaction) throws Exception {
-        freePagesInTransaction(exclusive, transaction, -1);
-    }
-
-
-    private void freePagesInTransaction(boolean exclusive, Transaction transaction, int cur) throws Exception {
-        tryUnlockRootPageID(exclusive);
-        if (transaction == null) {
-            if(exclusive || cur < 0)
-                throw new Exception("Unable to free pages in Transaction");
-            unlock(false,cur);
-            buffer_pool_manager.unpinPage(cur,false);
-            return;
-        }
-        for (Page page : transaction.getPageSet()) {
-            int curPid = page.getPageID();
-            unlock(exclusive,page);
-            buffer_pool_manager.unpinPage(curPid,exclusive);
-            if (transaction.getDeletedPageSet().find(curPid) != transaction.getDeletedPageSet().end()) {
-                buffer_pool_manager.deletePage(curPid);
-                transaction.getDeletedPageSet().erase(curPid);
-            }
-        }
-        if(!transaction.getDeletedPageSet().empty())
-            throw new Exception("Unable to free pages in Transaction");
-        transaction.getPageSet().clear();
     }
 
     /*
@@ -509,12 +477,12 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      * updating it.
      */
     private void updateRootPageID(){
-        updateRootPageID(0);
+        updateRootPageID(false);
     }
 
-    private void updateRootPageID(int insert_record) {
-        HeaderPage header_page =  buffer_pool_manager.fetchPage(HEADER_PAGE_ID);
-        if (insert_record == 1)
+    private void updateRootPageID(boolean insertRecord) {
+        HeaderPage header_page = (HeaderPage) buffer_pool_manager.fetchPage(HEADER_PAGE_ID);
+        if (insertRecord)
             // create a new record<index_name + root_page_id> in header_page
             header_page.insertRecord(index_name, rootPageID);
         else
@@ -528,73 +496,95 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      ***************************************************************************/
 
 
-    public int isBalanced(int pid) throws Exception {
-        if (isEmpty()) return 1;
-        BPlusTreePage node = buffer_pool_manager.fetchPage(pid);
-        if (node == null) {
-            throw new Exception("all page are pinned while isBalanced");
-        }
-        int ret = 0;
-        if (!node.isLeafPage())  {
-            BPlusTreeInternalPage page = (BPlusTreeInternalPage) node;
-            int last = -2;
-            for (int i = 0; i < page.getSize(); i++) {
-                int cur = isBalanced((Integer) page.valueAt(i));
-                if (cur>=0 && last == -2) {
-                    last = cur;
-                    ret = last + 1;
-                }else if (last != cur) {
-                    ret = -1;
-                    break;
+    public int isBalanced(int pid) {
+
+        try{
+            if (isEmpty()) return 1;
+            Page node = buffer_pool_manager.fetchPage(pid);
+            BPlusTreePage pageNode = new BPlusTreePage(node);
+
+            if (node == null) {
+                throw new Exception("all page are pinned while isBalanced");
+            }
+            int ret = 0;
+            if (!pageNode.isLeafPage())  {
+                BPlusTreeInternalPage page = (BPlusTreeInternalPage) pageNode;
+                int last = -2;
+                for (int i = 0; i < page.getSize(); i++) {
+                    int cur = isBalanced((Integer) page.valueAt(i));
+                    if (cur>=0 && last == -2) {
+                        last = cur;
+                        ret = last + 1;
+                    }else if (last != cur) {
+                        ret = -1;
+                        break;
+                    }
                 }
             }
+            buffer_pool_manager.unpinPage(pid,false);
+            return ret;
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
         }
-        buffer_pool_manager.unpinPage(pid,false);
-        return ret;
+        return -1;
+
     }
 
 
-    public boolean isPageCorr(int pid, Pair<KeyType,KeyType> out) throws Exception {
-        if (isEmpty()) return true;
-        BPlusTreePage node = buffer_pool_manager.fetchPage(pid);
-        if (node == null) {
-            throw new Exception("all page are pinned while isPageCorr");
-        }
-        boolean ret = true;
-        if (node.isLeafPage())  {
-            BPlusTreeLeafPage page = (BPlusTreeLeafPage) node;
-            int size = page.getSize();
-            ret = ret && (size >= node.getMinSize() && size <= node.getMaxSize());
-            for (int i = 1; i < size; i++) {
-                if (comparator.compare(page.keyAt(i-1), page.keyAt(i)) > 0) {
-                    ret = false;
-                    break;
-                }
+    public boolean isPageCorr(int pid, Pair<KeyType,KeyType> out) {
+        try{
+            if (isEmpty()) return true;
+            Page node = buffer_pool_manager.fetchPage(pid);
+            BPlusTreePage pageNode = new BPlusTreePage(node);
+
+            if (node == null) {
+                throw new Exception("all page are pinned while isPageCorr");
             }
-            out = new Pair<KeyType,KeyType>((KeyType)page.keyAt(0),(KeyType)page.keyAt(size-1));
-        } else {
-            BPlusTreeInternalPage page = (BPlusTreeInternalPage) node;
-            int size = page.getSize();
-            ret = ret && (size >= node.getMinSize() && size <= node.getMaxSize());
-            Pair<KeyType,KeyType> left =  new Pair<>(),right = new Pair<>();
-            for (int i = 1; i < size; i++) {
-                if (i == 1) {
-                    ret = ret && isPageCorr((Integer) page.valueAt(0),left);
+            boolean ret = true;
+            if (pageNode.isLeafPage())  {
+                BPlusTreeLeafPage page = (BPlusTreeLeafPage) pageNode;
+                int size = page.getSize();
+                ret = ret && (size >= pageNode.getMinSize() && size <= pageNode.getMaxSize());
+                for (int i = 1; i < size; i++) {
+                    if (comparator.compare(page.keyAt(i-1), page.keyAt(i)) > 0) {
+                        ret = false;
+                        break;
+                    }
                 }
-                ret = ret && isPageCorr((Integer) page.valueAt(i),right);
-                ret = ret && (comparator.compare(page.keyAt(i) ,left.getValue())>0 && comparator.compare(page.keyAt(i), right.getKey())<=0);
-                ret = ret && (i == 1 || comparator.compare(page.keyAt(i-1) , page.keyAt(i)) < 0);
-                if (!ret) break;
-                left = right;
+                out = new Pair<KeyType,KeyType>((KeyType)page.keyAt(0),(KeyType)page.keyAt(size-1));
+            } else {
+                BPlusTreeInternalPage page = (BPlusTreeInternalPage) pageNode;
+                int size = page.getSize();
+                ret = ret && (size >= pageNode.getMinSize() && size <= pageNode.getMaxSize());
+                Pair<KeyType,KeyType> left =  new Pair<>(),right = new Pair<>();
+                for (int i = 1; i < size; i++) {
+                    if (i == 1) {
+                        ret = ret && isPageCorr((Integer) page.valueAt(0),left);
+                    }
+                    ret = ret && isPageCorr((Integer) page.valueAt(i),right);
+                    ret = ret && (comparator.compare(page.keyAt(i) ,left.getValue())>0 && comparator.compare(page.keyAt(i), right.getKey())<=0);
+                    ret = ret && (i == 1 || comparator.compare(page.keyAt(i-1) , page.keyAt(i)) < 0);
+                    if (!ret) break;
+                    left = right;
+                }
+                out = new Pair<KeyType,KeyType>((KeyType) page.keyAt(0), (KeyType) page.keyAt(size-1));
             }
-            out = new Pair<KeyType,KeyType>((KeyType) page.keyAt(0), (KeyType) page.keyAt(size-1));
+            buffer_pool_manager.unpinPage(pid,false);
+            return ret;
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
         }
-        buffer_pool_manager.unpinPage(pid,false);
-        return ret;
+        return false;
+
+
     }
 
 
-    public boolean check(boolean forceCheck) throws Exception {
+    public boolean check(boolean forceCheck) {
         if (!forceCheck && !openCheck) {
             return true;
         }
@@ -624,7 +614,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     }
 
     private void unlock(boolean exclusive, int pageID) {
-        Page page = buffer_pool_manager.fetchPage(pageID);
+        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(pageID);
         unlock(exclusive, page);
         buffer_pool_manager.unpinPage(pageID, exclusive);
     }
@@ -655,6 +645,5 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         }
     }
 
-    
 }
 

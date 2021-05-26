@@ -1,8 +1,8 @@
 package main.storage.page;
 
 import main.buffer.BufferPoolManager;
-import main.storage.index.IndexPageType;
 import main.common.Pair;
+import main.storage.index.IndexPageType;
 
 import java.util.List;
 
@@ -25,7 +25,7 @@ public class BPlusTreePage<KeyType, ValueType> {
 
     List<Pair<KeyType, ValueType>> array ;
 
-    public BPlusTreePage(Page<KeyType, ValueType> page){
+    public BPlusTreePage(Page<Pair<KeyType, ValueType>> page){
         setPageID(page.getPageID());
         array = page.getData();
     }
@@ -101,5 +101,8 @@ public class BPlusTreePage<KeyType, ValueType> {
     }
 
     public <N extends BPlusTreePage> void moveLastToFrontOf(N recipient, int parentIndex, BufferPoolManager bpm) {
+    }
+
+    public <N extends BPlusTreePage> void moveAllTo(N neighborNode, int index, BufferPoolManager buffer_pool_manager) {
     }
 }

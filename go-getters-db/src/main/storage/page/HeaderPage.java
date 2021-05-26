@@ -3,7 +3,7 @@ package main.storage.page;
 import main.common.Pair;
 import main.common.Ref;
 
-public class HeaderPage extends Page {
+public class HeaderPage extends Page<Pair<String, Integer>> {
 
     public boolean insertRecord(String name, int rootID) {
         //assert (name.length() < 32);
@@ -14,7 +14,7 @@ public class HeaderPage extends Page {
         if (findRecord(name) != -1)
             return false;
 
-        addEntry(new Pair<String, Integer>(name, rootID), recordCount);
+        getData().add(new Pair<>(name, rootID));
         setRecordCount(recordCount + 1);
         return true;
     }
@@ -27,14 +27,12 @@ public class HeaderPage extends Page {
         // record does not exsit
         if (index == -1)
             return false;
-        removeEntry(index);
+        getData().set(index, new Pair<>());
         setRecordCount(recordNum - 1);
         return true;
     }
 
     public boolean updateRecord(String name, int rootID) {
-        assert (name.length() < 32);
-
         int index = findRecord(name);
         // record does not exsit
         if (index == -1)

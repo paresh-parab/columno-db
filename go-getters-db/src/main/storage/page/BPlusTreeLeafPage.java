@@ -60,44 +60,74 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
     }
 
 
-    public KeyType keyAt(int index) throws Exception {
-        if(index >= 0 && index < getSize())
-            return ((Pair<KeyType, ValueType>)array.get(index)).getKey();
-        else
-            throw new Exception("Invalid index");
-    }
+    public KeyType keyAt(int index) {
 
-    public ValueType valueAt(int index) throws Exception {
-        if(index >= 0 && index < getSize())
-            return ((Pair<KeyType, ValueType>)array.get(index)).getValue();
-        else
-            throw new Exception("Invalid index");
-    }
-
-
-
-    public Pair<KeyType, ValueType> getItem(int index) throws Exception {
-        if(index >= 0 && index < getSize())
-            return (Pair<KeyType, ValueType>) array.get(index);
-        else
-            throw new Exception("Invalid index");
-    }
-
-
-    int insert(KeyType key, ValueType value, KeyComparator comparator) throws Exception {
-        int idx = keyIndex(key,comparator); //first larger than key
-        if(idx >= 0){
-            increaseSize(1);
-            array.add(idx, new Pair<>(key, value));
-            array.remove(array.size()-1);
-            return getSize();
+        try{
+            if(index >= 0 && index < getSize())
+                return ((Pair<KeyType, ValueType>)array.get(index)).getKey();
+            else
+                throw new Exception("Invalid index");
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
         }
-        else
-            throw new Exception("Invalid index for insertion");
+        return null;
+    }
+
+    public ValueType valueAt(int index) {
+
+        try{
+            if(index >= 0 && index < getSize())
+                return ((Pair<KeyType, ValueType>)array.get(index)).getValue();
+            else
+                throw new Exception("Invalid index");
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
+        }
+        return null;
+    }
+
+
+
+    public Pair<KeyType, ValueType> getItem(int index) {
+        try{
+            if(index >= 0 && index < getSize())
+                return (Pair<KeyType, ValueType>) array.get(index);
+            else
+                throw new Exception("Invalid index");
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
+        }
+        return null;
+    }
+
+
+    public int insert(KeyType key, ValueType value, KeyComparator comparator) {
+        try{
+            int idx = keyIndex(key,comparator); //first larger than key
+            if(idx >= 0){
+                increaseSize(1);
+                array.add(idx, new Pair<>(key, value));
+                array.remove(array.size()-1);
+                return getSize();
+            }
+            else
+                throw new Exception("Invalid index for insertion");
+        }catch( Exception e){
+            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println(e.getStackTrace());
+            System.exit(0);
+        }
+        return -1;
 
     }
 
-    void moveHalfTo(BPlusTreeLeafPage recipient, BufferPoolManager buffer_pool_manager) {
+    public void moveHalfTo(BPlusTreeLeafPage recipient, BufferPoolManager buffer_pool_manager) {
         if(recipient != null){
             int total = getMaxSize() + 1;
             if(getSize() == total){
@@ -116,7 +146,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
         }
     }
 
-    void copyHalfFrom(Pair<KeyType, ValueType> items, int size) {}
+    public void copyHalfFrom(Pair<KeyType, ValueType> items, int size) {}
 
 /*****************************************************************************
  * LOOKUP
@@ -126,7 +156,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
      * does, then store its corresponding value in input "value" and return true.
      * If the key does not exist, then return false
      */
-    boolean lookup(KeyType key, ValueType value, KeyComparator comparator) {
+    public boolean lookup(KeyType key, ValueType value, KeyComparator comparator) {
         int idx = keyIndex(key,comparator);
         if (idx < getSize() && comparator.compare(((Pair<KeyType, ValueType>)array.get(idx)).getKey(), key) == 0) {
             value = ((Pair<KeyType, ValueType>)array.get(idx)).getValue();
@@ -145,7 +175,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
      * @return   page size after deletion
      */
 
-    int removeAndDeleteRecord( KeyType key,  KeyComparator comparator) throws Exception {
+    public int removeAndDeleteRecord( KeyType key,  KeyComparator comparator) {
         int firIdxLargerEqualThanKey = keyIndex(key,comparator);
         if (firIdxLargerEqualThanKey >= getSize() || comparator.compare(key, keyAt(firIdxLargerEqualThanKey)) != 0) {
             return getSize();
@@ -166,7 +196,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
      * update next page id
      */
 
-    void moveAllTo(BPlusTreeLeafPage recipient, int rootID, BufferPoolManager buffer_pool_manager) {
+    public void moveAllTo(BPlusTreeLeafPage recipient, int rootID, BufferPoolManager buffer_pool_manager) {
         if(recipient != null){
             int startIdx = recipient.getSize();//7 is 4,5,6,7; 8 is 4,5,6,7,8
             for (int i = 0; i < getSize(); i++) {
@@ -192,21 +222,21 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
      * update relavent key & value pair in its parent page.
      */
 
-    void moveFirstToEndOf(BPlusTreeLeafPage recipient, BufferPoolManager buffer_pool_manager) throws Exception {
+    public void moveFirstToEndOf(BPlusTreeLeafPage recipient, BufferPoolManager buffer_pool_manager) {
         Pair<KeyType, ValueType> pair = getItem(0);
         increaseSize(-1);
         array.remove(0);
         array.add(new Pair<>());
         recipient.copyLastFrom(pair);
         //update relavent key & value pair in its parent page.
-        Page page = buffer_pool_manager.fetchPage(getParentPageID());
+        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(getParentPageID());
         BPlusTreeInternalPage parent = (BPlusTreeInternalPage) page.getData();
         //it should be array.get(1) as parent is internal page and keys start from 1, values start from 0
         parent.setKeyAt(parent.valueIndex(getPageID()), ((Pair<KeyType, ValueType>)array.get(0)).getKey());
         buffer_pool_manager.unpinPage(getParentPageID(), true);
     }
 
-    void copyLastFrom(Pair<KeyType, ValueType> item) {
+    public void copyLastFrom(Pair<KeyType, ValueType> item) {
         if(getSize() + 1 <= getMaxSize()){
             array.set(getSize(), item);
             increaseSize(1);
@@ -218,25 +248,25 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
      * update relavent key & value pair in its parent page.
      */
 
-    void moveLastToFrontOf(BPlusTreeLeafPage recipient, int parentIndex, BufferPoolManager buffer_pool_manager) throws Exception {
+    public  void moveLastToFrontOf(BPlusTreeLeafPage recipient, int parentIndex, BufferPoolManager buffer_pool_manager) {
         Pair<KeyType, ValueType> pair = getItem(getSize() - 1);
         increaseSize(-1);
         recipient.copyFirstFrom(pair, parentIndex, buffer_pool_manager);
     }
 
-    void copyFirstFrom(Pair<KeyType, ValueType> item, int parentIndex, BufferPoolManager buffer_pool_manager) throws Exception {
+    public void copyFirstFrom(Pair<KeyType, ValueType> item, int parentIndex, BufferPoolManager buffer_pool_manager) {
         if(getSize() + 1 < getMaxSize()){
             increaseSize(1);
             array.add(0, item);
             array.remove(array.size()-1);
-            Page page = buffer_pool_manager.fetchPage(getParentPageID());
+            Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(getParentPageID());
             BPlusTreeInternalPage parent = (BPlusTreeInternalPage) page.getData();
             parent.setKeyAt(parentIndex, ((Pair<KeyType, ValueType>)array.get(0)).getKey());
             buffer_pool_manager.unpinPage(getParentPageID(), true);
         }
     }
 
-    String toString(boolean verbose) {
+    public String toString(boolean verbose) {
         if (getSize() == 0) {
             return "";
         }
