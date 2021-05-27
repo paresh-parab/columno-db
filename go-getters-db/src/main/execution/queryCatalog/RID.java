@@ -1,4 +1,4 @@
-package main.execution.catalog;
+package main.execution.queryCatalog;
 
 public class RID {
 
