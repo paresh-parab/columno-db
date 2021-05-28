@@ -1,4 +1,8 @@
-package main.execution.catalog;
+package main.execution.queryExecutor;
+
+import main.execution.queryCatalog.Catalog;
+import main.execution.queryCatalog.RID;
+import main.execution.queryCatalog.Transaction;
 
 public class ExContext {
     Catalog catalog;

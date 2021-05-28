@@ -1,4 +1,4 @@
-package main.execution.catalog;
+package main.execution.queryCatalog;
 
 import java.util.ArrayList;
 import java.util.List;
