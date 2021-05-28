@@ -1,10 +1,6 @@
 package main.storage.disk;
-
-import main.storage.page.Page;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
+import java.util.Objects;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,71 +18,55 @@ public class DiskManager<T>
     String logName;
     static String bufferUsed;
 
-    AtomicInteger nextPageID = new AtomicInteger(); //Maybe needs initialization
+    AtomicInteger nextPageID = new AtomicInteger(-1);
     Future<Void> flushLogF;
 
     public DiskManager(String dbFile)
     {
-        int n = dbFile.lastIndexOf('.');
+        this.logName = dbFile + ".log";
 
-        if (n == dbFile.length()) { return; }
+        dbIO = new File(dbFile);
 
-        String logName = dbFile.substring(0, n) + ".log";
+        boolean flag = dbIO.mkdirs();
+
+        if (flag) {
+            System.out.println("DB created successfully");
+        }
+        else {
+            System.out.println("DB already present");
+        }
 
         try
         {
-            logIO = new File(logName);
-            boolean flag = logIO.createNewFile();
+            logIO = new File("./" + dbIO + "/" + logName);
+            flag = logIO.createNewFile();
 
-            if (flag)
-            {
+            if (flag) {
                 System.out.println("Log File created successfully");
             }
-            else
-            {
+            else {
                 System.out.println("Log File already present");
             }
         }
-        catch (IOException e)
-        {
+        catch (IOException e) {
             System.out.println("Exception: Cannot open log file");
-            e.printStackTrace();
-            exit(1);
-        }
-
-        try
-        {
-            dbIO = new File(dbFile);
-            boolean flag = dbIO.createNewFile();
-
-            if (flag)
-            {
-                System.out.println("DB File created successfully");
-            }
-            else
-            {
-                System.out.println("DB File already present");
-            }
-        }
-        catch (IOException e)
-        {
-            System.out.println("Exception: Cannot open DB file");
             e.printStackTrace();
             exit(1);
         }
     }
 
-    public void writePage(int pageID, String pageData)
+    public void writePage(int pageID, T pageData)
     {
         int offset = pageID * PAGE_SIZE;
         numWrites += 1;
 
         try
         {
-            RandomAccessFile rap = new RandomAccessFile(dbIO.getName(), "rwd");
-            rap.seek(offset);
-            rap.writeUTF(String.valueOf(pageData));
-            rap.getFD().sync();
+            ObjectOutputStream oos = new ObjectOutputStream(
+                    new FileOutputStream(dbIO.getName() + "/" + pageID));
+            oos.writeObject(pageData);
+            oos.flush();
+            oos.close();
         }
         catch (IOException e)
         {
@@ -96,60 +76,60 @@ public class DiskManager<T>
         }
     }
 
-    public void readPage(int pageID, String pageData)
+    public T readPage(int pageID, T pageData)
     {
         int offset = pageID * PAGE_SIZE;
         numWrites = getNumWrites();
         numWrites += 1;
 
-        if (offset > dbIO.length())
-        {
+        if (offset > dbIO.length()) {
             System.out.println("Exception: I/O error reading past end of file");
         }
         else
         {
             try
             {
-                RandomAccessFile rap = new RandomAccessFile(dbIO.getName(), "rwd");
-                rap.seek(offset);
-                rap.readUTF();
+                ObjectInputStream ois = new ObjectInputStream(
+                        new FileInputStream(dbIO.getName() + "/" + pageID));
+                pageData = (T)ois.readObject();
+                ois.close();
             }
-            catch (IOException e)
+            catch (IOException | ClassNotFoundException e)
             {
                 System.out.println("Exception: I/O error while reading");
                 e.printStackTrace();
-                exit(1);
+                return null;
             }
         }
+        return pageData;
     }
 
-    boolean readLog(String logData, int size, int offset)
+    public String readLog(int offset)
     {
-        if (offset >= logName.length()) return false;
+        if (offset >= logName.length()) return null;
 
+        String logData;
         try
         {
-            RandomAccessFile rap = new RandomAccessFile(logIO.getName(), "rwd");
+            RandomAccessFile rap = new RandomAccessFile(
+                    dbIO.getName() + "/" + logIO.getName(), "rwd");
             rap.seek(offset);
-            rap.readUTF();
+            logData = rap.readUTF();
         }
         catch (IOException e)
         {
             System.out.println("I/O error while reading log");
             e.printStackTrace();
-            exit(1);
+            return null;
         }
-
-        return true;
+        return logData;
     }
 
-    void writeLog(String logData, int size)
+    public void writeLog(String logData)
     {
         try
         {
             assert(!logData.equals(bufferUsed)); bufferUsed = logData;
-
-            if (size == 0) return;
 
             flushLog = getFlushState(); flushLog = true;
 
@@ -162,7 +142,8 @@ public class DiskManager<T>
             numFlushes = getNumFlushes();
             numFlushes += 1;
 
-                RandomAccessFile rap = new RandomAccessFile(logIO.getName(), "rwd");
+                RandomAccessFile rap = new RandomAccessFile(
+                        dbIO.getName() + "/" + logIO.getName(), "rwd");
                 rap.writeUTF(logData);
                 rap.getFD().sync();
                 flushLog = false;
@@ -177,7 +158,7 @@ public class DiskManager<T>
 
     public int allocatePage() { return nextPageID.incrementAndGet(); }
 
-    public void deallocatePage(int pageID) {}
+    public void deallocatePage(int pageID) { delete(new File(dbIO.getName() + "/" + pageID));}
 
     int getNumFlushes() { return numFlushes; }
 
@@ -188,4 +169,23 @@ public class DiskManager<T>
     void setFlushLogFuture(Future<Void> flushLogFuture) { flushLogF = flushLogFuture; }
 
     boolean hasFlushLogFuture() { return flushLogF == null; }
+
+    public void delete(File db)
+    {
+        try {
+            if (db.isDirectory()) {
+                for (File c : Objects.requireNonNull(db.listFiles()))
+                    delete(c);
+            }
+        }
+        catch (Exception e) {
+            System.out.println("Failed to delete file: " + db);
+            e.printStackTrace();
+        }
+    }
+    public void shutDown()
+    {
+        delete(this.dbIO);
+        System.out.println("DB and Log file deleted successfully");
+    }
 }

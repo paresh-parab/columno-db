@@ -1,21 +1,23 @@
 package main.storage.page;
 
-        import java.util.ArrayList;
-        import java.util.List;
-        import java.util.concurrent.locks.Lock;
-        import java.util.concurrent.locks.ReadWriteLock;
-        import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import static main.common.Constants.PAGE_SIZE;
 
-public class Page<T> {
-
+public class Page<T> implements Serializable
+{
     private int count;
     private List<T> data;
 
-    private int pageID;
-    private int nextPageID;
+    private int pageID = -1;
+    private int nextPageID = 0;
 
-    public int pinCount;
-    public boolean isDirty;
+    public int pinCount = 0;
+    public boolean isDirty = false;
 
     private final ReadWriteLock rwlatch
             = new ReentrantReadWriteLock();
@@ -30,6 +32,11 @@ public class Page<T> {
 
     public Page() {
         resetMemory();
+    }
+
+    public Page(T page) {
+        this();
+        this.data.add(page);
     }
 
     public List<T> getData() {
@@ -50,6 +57,7 @@ public class Page<T> {
 
     public void setPageID(int pageID) {
         this.pageID  = pageID;
+        this.nextPageID = this.pageID + 1;
     }
 
     public int getPinCount() {
@@ -78,16 +86,5 @@ public class Page<T> {
 
     public void setNextPageID(int nextPageID) {
         this.nextPageID = nextPageID;
-    }
-
-    public String getStringData()
-    {
-        StringBuilder stringData = new StringBuilder();
-
-        for (int i = 0; i < PAGE_SIZE; i++)
-        {
-            stringData.append(data.get(i).getClass().toString());
-        }
-        return stringData.toString();
     }
 }

@@ -36,9 +36,9 @@ public class LRUReplacer<T> extends Replacer<T>
     }
 
     @Override
-    public boolean pin(T frameID)
+    public void pin(T frameID)
     {
-        return erase(frameID);
+        erase(frameID);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class LRUReplacer<T> extends Replacer<T>
     }
 
     @Override
-    public T victim(T value)
+    public T victim()
     {
         try
         {
@@ -96,7 +96,7 @@ public class LRUReplacer<T> extends Replacer<T>
         catch (Exception e)
         {
             System.out.println("Exception: Error in getting the victim");
-            return value;
+            return null;
         }
     }
 

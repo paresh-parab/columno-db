@@ -66,7 +66,7 @@ public class ExtendibleHash<K, V> extends HashTable<K, V>
         mutex.unlock();
         return bNum;
     }
-    public boolean find(K key, V value)
+    public V find(K key, V value)
     {
         int idx = getIdx(key);
 
@@ -76,11 +76,12 @@ public class ExtendibleHash<K, V> extends HashTable<K, V>
         {
             value = buckets.get(idx).kmap.get(key);
 
-            return true;
+            return value;
         }
-        mutex.unlock(); return false;
+        mutex.unlock();
+        return null;
     }
-    public void remove(K key)
+    public boolean remove(K key)
     {
         int idx = getIdx(key);
 
@@ -88,11 +89,11 @@ public class ExtendibleHash<K, V> extends HashTable<K, V>
 
         Bucket current  = buckets.get(idx);
 
-        if (!current.kmap.containsKey(key))
+        if (!current.kmap.containsKey(key)) return false;
 
         current.kmap.remove(key);
 
-        mutex.unlock();
+        mutex.unlock(); return true;
     }
 
     public void insert(K key, V value)

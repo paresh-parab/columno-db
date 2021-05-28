@@ -2,11 +2,11 @@ package test.buffer;
 
 import main.buffer.LRUReplacer;
 
+import static main.common.Constants.INVALID_PAGE_ID;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class LRUReplacerTest
 {
-
     @org.junit.jupiter.api.Test
     void LRUTest1()
     {
@@ -24,15 +24,11 @@ public class LRUReplacerTest
         assertEquals(6, lruReplacer.size());
 
         // pop element from replacer
-        int randomVal = -1;
-        int value = lruReplacer.victim(randomVal);
-        assertEquals(2, value);
+        assertEquals(2, lruReplacer.victim());
 
-        value = lruReplacer.victim(randomVal);
-        assertEquals(3, value);
+        assertEquals(3, lruReplacer.victim());
 
-        value = lruReplacer.victim(randomVal);
-        assertEquals(4, value);
+        assertEquals(4, lruReplacer.victim());
 
         // remove element from replacer
         lruReplacer.erase(4);
@@ -40,11 +36,8 @@ public class LRUReplacerTest
         assertEquals(2, lruReplacer.size());
 
         // pop element from replacer after removal
-        value = lruReplacer.victim(randomVal);
-        assertEquals(5, value);
-
-        value = lruReplacer.victim(randomVal);
-        assertEquals(1, value);
+        assertEquals(5, lruReplacer.victim());
+        assertEquals(1, lruReplacer.victim());
     }
 
     @org.junit.jupiter.api.Test
@@ -52,15 +45,13 @@ public class LRUReplacerTest
     {
         LRUReplacer<Integer> lruReplacer = new LRUReplacer<>();
 
-        int randomVal = -1;
-        int value = lruReplacer.victim(randomVal);
-        assertEquals(-1, value);
+        assertNull(lruReplacer.victim());
 
         lruReplacer.insert(0);
         assertEquals(1, lruReplacer.size());
 
-        assertEquals(0, lruReplacer.victim(randomVal));
-        assertNotEquals(0, lruReplacer.victim(-1));
+        assertEquals(0, lruReplacer.victim());
+        assertNotEquals(0, lruReplacer.victim());
 
         assertFalse(lruReplacer.erase(0));
         assertEquals(0, lruReplacer.size());
@@ -73,7 +64,7 @@ public class LRUReplacerTest
 
         assertEquals(2, lruReplacer.size());
 
-        assertEquals(2, lruReplacer.victim(randomVal));
+        assertEquals(2, lruReplacer.victim());
     }
 
     @org.junit.jupiter.api.Test
@@ -92,11 +83,8 @@ public class LRUReplacerTest
         for (int i = 0; i < 50; ++i) assertTrue(lruReplacer.erase(i));
 
         // check left
-        int value = -1;
-        for (int i = 99; i >= 50; --i)
-        {
-            assertEquals(i, lruReplacer.victim(value));
-            value = -1;
+        for (int i = 99; i >= 50; --i) {
+            assertEquals(i, lruReplacer.victim());
         }
     }
 
@@ -118,9 +106,9 @@ public class LRUReplacerTest
 
         // Scenario: get three victims from the lru.
         int value = -1;
-        assertEquals(1, lruReplacer.victim(value));
-        assertEquals(2, lruReplacer.victim(value));
-        assertEquals(3, lruReplacer.victim(value));
+        assertEquals(1, lruReplacer.victim());
+        assertEquals(2, lruReplacer.victim());
+        assertEquals(3, lruReplacer.victim());
 
         // Scenario: pin elements in the replacer.
         // Note that 3 has already been victimized, so pinning 3 should have no effect.
@@ -132,8 +120,8 @@ public class LRUReplacerTest
         lruReplacer.unpin(4);
 
         // Scenario: continue looking for victims. We expect these victims.
-        assertEquals(5, lruReplacer.victim(value));
-        assertEquals(6, lruReplacer.victim(value));
-        assertEquals(4, lruReplacer.victim(4));
+        assertEquals(5, lruReplacer.victim());
+        assertEquals(6, lruReplacer.victim());
+        assertEquals(4, lruReplacer.victim());
     }
 }

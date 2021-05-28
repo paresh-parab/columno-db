@@ -166,10 +166,10 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
                 for (int i = copyIdx; i < total; i++) {
                     recipient.array.set(i - copyIdx, new Pair<>((Pair<KeyType, ValueType>)array.get(i)));
                     //update children's parent page
-                    Page<Pair<KeyType, ValueType>> childRawPage = buffer_pool_manager.fetchPage(((Pair<KeyType, ValueType>)array.get(i)).getValue());
+                    Page<Pair<KeyType, ValueType>> childRawPage = buffer_pool_manager.fetchPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue());
                     BPlusTreePage childTreePage = new BPlusTreePage(childRawPage);
                     childTreePage.setParentPageID(recipPageId);
-                    buffer_pool_manager.unpinPage(((Pair<KeyType, ValueType>)array.get(i)).getValue(), true);
+                    buffer_pool_manager.unpinPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue(), true);
                 }
                 //set size,is odd, bigger is last part
                 setSize(copyIdx);
@@ -241,10 +241,10 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
                 recipient.array.set(start+i, new Pair<>((Pair<KeyType, ValueType>)array.get(i)));
 
                 //update children's parent page
-                Page<Pair<KeyType, ValueType>> childRawPage = buffer_pool_manager.fetchPage(((Pair<KeyType, ValueType>)array.get(i)).getValue());
+                Page<Pair<KeyType, ValueType>> childRawPage = buffer_pool_manager.fetchPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue());
                 BPlusTreePage childTreePage = (BPlusTreePage) childRawPage.getData();
                 childTreePage.setParentPageID(recipPageId);
-                buffer_pool_manager.unpinPage(((Pair<KeyType, ValueType>)array.get(i)).getValue(), true);
+                buffer_pool_manager.unpinPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue(), true);
             }
             //update relavent key & value pair in its parent page.
             recipient.setSize(start + getSize());
