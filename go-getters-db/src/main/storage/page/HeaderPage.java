@@ -3,7 +3,7 @@ package main.storage.page;
 import main.common.Pair;
 import main.common.Ref;
 
-public class HeaderPage extends Page<Pair<String, Integer>> {
+public class HeaderPage extends IndexPage<String, Integer> {
 
     public boolean insertRecord(String name, int rootID) {
         //assert (name.length() < 32);

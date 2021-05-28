@@ -207,7 +207,7 @@ public class AggregationExecutor extends AbstractExecutor {
                 for ( Column column : this.getOutputSchema().getColumns() ) {
                     result.add(column.getExpr().evaluateAggregate(key.groupBys, val.aggregates));
                 }
-            tuple[0] = new Tuple(Collections.singletonList(result));
+            tuple[0] = new Tuple(result);
                 return true;
             }
         }

@@ -15,7 +15,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
     private static Instrumentation instrumentation;
     private int nextPageID;
 
-    public BPlusTreeLeafPage(Page page) {
+    public BPlusTreeLeafPage(IndexPage<KeyType, ValueType> page) {
         super(page);
     }
 
@@ -229,7 +229,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
         array.add(new Pair<>());
         recipient.copyLastFrom(pair);
         //update relavent key & value pair in its parent page.
-        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(getParentPageID());
+        IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(getParentPageID());
         BPlusTreeInternalPage parent = (BPlusTreeInternalPage) page.getData();
         //it should be array.get(1) as parent is internal page and keys start from 1, values start from 0
         parent.setKeyAt(parent.valueIndex(getPageID()), ((Pair<KeyType, ValueType>)array.get(0)).getKey());
@@ -259,7 +259,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
             increaseSize(1);
             array.add(0, item);
             array.remove(array.size()-1);
-            Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(getParentPageID());
+            IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(getParentPageID());
             BPlusTreeInternalPage parent = (BPlusTreeInternalPage) page.getData();
             parent.setKeyAt(parentIndex, ((Pair<KeyType, ValueType>)array.get(0)).getKey());
             buffer_pool_manager.unpinPage(getParentPageID(), true);

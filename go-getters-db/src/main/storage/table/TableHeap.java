@@ -1,8 +1,11 @@
 package main.storage.table;
 
 import main.buffer.BufferPoolManager;
-import main.storage.page.Page;
+import main.catalog.Schema;
+import main.storage.page.TablePage;
+import main.type.TypeID;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static main.common.Constants.INVALID_PAGE_ID;
@@ -13,14 +16,16 @@ public class TableHeap {
     private BufferPoolManager bpm;
     private int firstPageID;
 
-    public TableHeap(BufferPoolManager bpm) {
+
+    public TableHeap(BufferPoolManager bpm, Schema schema) {
         this.bpm = bpm;
-        Page<Tuple> firstPage = bpm.newPage(firstPageID);
+        TablePage firstPage = (TablePage) bpm.newPage(firstPageID);
         this.firstPageID = firstPage.getPageID();
+        firstPage.setSchema(schema);
         bpm.unpinPage(firstPageID, true);
     }
 
-    private boolean insertTupleIntoPage(Page<Tuple> page, Tuple t){
+    private boolean insertTupleIntoPage(TablePage page, Tuple t){
         List<Tuple> data = page.getData();
         if(data.size() == PAGE_SIZE){
             return false;
@@ -30,7 +35,7 @@ public class TableHeap {
     }
 
     public boolean insertTuple(Tuple tuple) {
-        Page<Tuple> currentPage = bpm.fetchPage(firstPageID);
+        TablePage currentPage = (TablePage) bpm.fetchPage(firstPageID);
         if (currentPage == null) {
             //Page doesnt exist
             return false;
@@ -47,11 +52,11 @@ public class TableHeap {
                 currentPage.wUnlatch();
                 bpm.unpinPage(currentPage.getPageID(), false);
                 // And repeat the process with the next page.
-                currentPage = bpm.fetchPage(nextPageID);
+                currentPage = (TablePage) bpm.fetchPage(nextPageID);
                 currentPage.wLatch();
             } else {
                 // Otherwise we have run out of valid pages. We need to create a new page.
-                Page<Tuple> newPage = bpm.newPage(nextPageID);
+                TablePage newPage = (TablePage) bpm.newPage(nextPageID);
                 // If we could not create a new page,
                 if (newPage == null) {
                     // Then life sucks and we abort the transaction.
@@ -74,6 +79,30 @@ public class TableHeap {
         bpm.unpinPage(currentPage.getPageID(), true);
         // Update the transaction's write set.
         return true;
+    }
+
+    public List getColumnValues(TypeID type) {
+
+        List result = null;
+
+        if(type == TypeID.STRING_TYPE){
+            result = new ArrayList<String>();
+        }else{
+            result = new ArrayList<Integer>();
+        }
+
+        int nextPageID = firstPageID;
+        do {
+            TablePage currentPage = (TablePage) bpm.fetchPage(nextPageID);
+            if (currentPage == null) {
+                break;
+            }
+            nextPageID = currentPage.getNextPageID();
+            currentPage.wLatch();
+            result.addAll(currentPage.getData());
+            currentPage.wUnlatch();
+        }while( nextPageID != INVALID_PAGE_ID);
+        return result;
     }
 
 

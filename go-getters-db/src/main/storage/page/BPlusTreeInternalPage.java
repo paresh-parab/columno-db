@@ -28,7 +28,7 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
         this.init(pageID, INVALID_PAGE_ID);
     }
 
-    public BPlusTreeInternalPage(Page<Pair<KeyType, ValueType>> page){
+    public BPlusTreeInternalPage(IndexPage<KeyType, ValueType> page){
         super(page);
     }
 
@@ -166,7 +166,8 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
                 for (int i = copyIdx; i < total; i++) {
                     recipient.array.set(i - copyIdx, new Pair<>((Pair<KeyType, ValueType>)array.get(i)));
                     //update children's parent page
-                    Page<Pair<KeyType, ValueType>> childRawPage = buffer_pool_manager.fetchPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue());
+                    IndexPage<KeyType, ValueType> childRawPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue());
+
                     BPlusTreePage childTreePage = new BPlusTreePage(childRawPage);
                     childTreePage.setParentPageID(recipPageId);
                     buffer_pool_manager.unpinPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue(), true);
@@ -230,7 +231,7 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
         int start = recipient.getSize();
         int recipPageId = recipient.getPageID();
         // first find parent
-        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(getParentPageID());
+        IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(getParentPageID());
         if(page != null){
             BPlusTreeInternalPage parent = (BPlusTreeInternalPage) page.getData();
 
@@ -241,7 +242,8 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
                 recipient.array.set(start+i, new Pair<>((Pair<KeyType, ValueType>)array.get(i)));
 
                 //update children's parent page
-                Page<Pair<KeyType, ValueType>> childRawPage = buffer_pool_manager.fetchPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue());
+                IndexPage<KeyType, ValueType> childRawPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue());
+
                 BPlusTreePage childTreePage = (BPlusTreePage) childRawPage.getData();
                 childTreePage.setParentPageID(recipPageId);
                 buffer_pool_manager.unpinPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue(), true);
@@ -275,14 +277,14 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
         recipient.copyLastFrom(pair, buffer_pool_manager);
         // update child parent page id
         int childPageId = (int) pair.getValue();
-        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(childPageId);
+        IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(childPageId);
         //assert (page != nullptr);
         BPlusTreePage child = new BPlusTreePage(page);
         child.setParentPageID(recipient.getPageID());
         //assert(child.getParentPageID() == recipient.GetPageID());
         buffer_pool_manager.unpinPage(child.getPageID(), true);
         //update relavent key & value pair in its parent page.
-        page = buffer_pool_manager.fetchPage(getParentPageID());
+        page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(getParentPageID());
         BPlusTreeInternalPage parent = new BPlusTreeInternalPage(page);
         parent.setKeyAt(parent.valueIndex(getPageID()), ((Pair<KeyType, ValueType>)array.get(0)).getKey());
         buffer_pool_manager.unpinPage(getParentPageID(), true);
@@ -314,14 +316,14 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
         array.remove(array.size()-1);
         // update child parent page id
         int childPageId = (int) pair.getValue();
-        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(childPageId);
+        IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(childPageId);
         //assert (page != nullptr);
         BPlusTreePage child = new BPlusTreePage(page);
         child.setParentPageID(getPageID());
         //assert(child->GetParentPageId() == GetPageId());
         buffer_pool_manager.unpinPage(child.getPageID(), true);
         //update relavent key & value pair in its parent page.
-        page = buffer_pool_manager.fetchPage(getParentPageID());
+        page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(getParentPageID());
         BPlusTreeInternalPage parent = new BPlusTreeInternalPage(page);
         parent.setKeyAt(parent_index, ((Pair<KeyType, ValueType>)array.get(0)).getKey());
         buffer_pool_manager.unpinPage(getParentPageID(), true);

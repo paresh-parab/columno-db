@@ -299,10 +299,16 @@ public class Value {
 
     // Return a string version of this value
     public String toString() {
-        return
-                "Integer :"+ integer.toString()
-                + "String :"+ string.toString()
-                + "TypeID :" + typeID.toString();
+        switch (typeID){
+            case INTEGER_TYPE:
+                return integer.toString();
+            case STRING_TYPE:
+                return new String(string);
+            case BOOLEAN_TYPE:
+                return bool.toString();
+            default:
+                return "";
+        }
     }
 
     // Create a copy of this value

@@ -3,7 +3,7 @@ package main.storage.index;
 import main.buffer.BufferPoolManager;
 import main.common.Pair;
 import main.storage.page.BPlusTreeLeafPage;
-import main.storage.page.Page;
+import main.storage.page.IndexPage;
 
 import static main.common.Constants.INVALID_PAGE_ID;
 
@@ -34,7 +34,7 @@ public class IndexIterator<KeyType, ValueType> {
             if (next == INVALID_PAGE_ID) {
                 leaf = null;
             } else {
-                Page<Pair<KeyType, ValueType>> page = bufferPoolManager.fetchPage(next);
+                IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) bufferPoolManager.fetchPage(next);
                 page.rLatch();
                 leaf = new BPlusTreeLeafPage(page);
                 index = 0;

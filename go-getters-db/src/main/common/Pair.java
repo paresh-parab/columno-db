@@ -1,6 +1,8 @@
 package main.common;
 
-public class Pair<K, V> {
+import static main.common.Constants.COLUMN_SEP;
+
+public class Pair<K, V>{
 
     private K key;
     private V value;
@@ -33,6 +35,11 @@ public class Pair<K, V> {
 
     public V getValue() {
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return key.toString() + COLUMN_SEP + value.toString();
     }
 
 }

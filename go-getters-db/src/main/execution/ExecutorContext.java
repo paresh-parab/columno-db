@@ -3,8 +3,6 @@ package main.execution;
 import main.buffer.BufferPoolManager;
 import main.catalog.Catalog;
 
-import java.util.logging.LogManager;
-
 public class ExecutorContext {
     private Catalog catalog;
     private BufferPoolManager bpm;
