@@ -2,11 +2,13 @@ package main.storage.page;
 
 import main.common.StringInitializable;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import static main.common.Constants.PAGE_SIZE;
 
 import static main.common.Constants.INVALID_PAGE_ID;
 import static main.common.Constants.LINE_SEP;
@@ -18,6 +20,7 @@ public abstract class Page {
     private int nextPageID = INVALID_PAGE_ID;
 
     public int pinCount = 0 ;
+
     public boolean isDirty = false;
 
     private final ReadWriteLock rwlatch
@@ -46,6 +49,7 @@ public abstract class Page {
 
     public void setPageID(int pageID) {
         this.pageID  = pageID;
+        this.nextPageID = this.pageID + 1;
     }
 
     public int getPinCount() {
@@ -105,4 +109,5 @@ public abstract class Page {
 
         return;
     }
+
 }

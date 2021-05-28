@@ -73,8 +73,6 @@ public class AggregationExecutor extends AbstractExecutor {
         /**
          * Create a new simplified aggregation hash table.
          *
-         * @param agg_exprs the aggregation expressions
-         * @param agg_types the types of aggregations
          */
         public SimpleAggregationHashTable(List<AbstractExpression> aggExprs,
                                           List<AggregationType> aggTypes) {
@@ -89,22 +87,18 @@ public class AggregationExecutor extends AbstractExecutor {
             List<Value> values = new ArrayList<>();
             for (AggregationType aggType : aggTypes) {
                 switch (aggType) {
-                    case CountAggregate:
-                        // Count starts at zero.
-                        values.add(new Value(0));
-                        break;
-                    case SumAggregate:
-                        // Sum starts at zero.
-                        values.add(new Value(0));
-                        break;
-                    case MinAggregate:
-                        // Min starts at INT_MAX.
-                        values.add(new Value(Integer.MAX_VALUE));
-                        break;
-                    case MaxAggregate:
-                        // Max starts at INT_MIN.
-                        values.add(new Value(Integer.MIN_VALUE));
-                        break;
+                    case CountAggregate ->
+                            // Count starts at zero.
+                            values.add(new Value(0));
+                    case SumAggregate ->
+                            // Sum starts at zero.
+                            values.add(new Value(0));
+                    case MinAggregate ->
+                            // Min starts at INT_MAX.
+                            values.add(new Value(Integer.MAX_VALUE));
+                    case MaxAggregate ->
+                            // Max starts at INT_MIN.
+                            values.add(new Value(Integer.MIN_VALUE));
                 }
             }
             return new AggregateValue(values);
@@ -116,22 +110,18 @@ public class AggregationExecutor extends AbstractExecutor {
         public void combineAggregateValues(AggregateValue result, AggregateValue input) {
             for (int i = 0; i < aggExprs.size(); i++) {
                 switch (aggTypes.get(i)) {
-                    case CountAggregate:
-                        // Count increases by one.
-                        result.set(i, result.get(i).add(new Value(1)));
-                        break;
-                    case SumAggregate:
-                        // Sum increases by addition.
-                        result.set(i, result.get(i).add(new Value(input.get(i))));
-                        break;
-                    case MinAggregate:
-                        // Min is just the min.
-                        result.set(i, result.get(i).min(new Value(input.get(i))));
-                        break;
-                    case MaxAggregate:
-                        // Max is just the max.
-                        result.set(i, result.get(i).max(new Value(input.get(i))));
-                        break;
+                    case CountAggregate ->
+                            // Count increases by one.
+                            result.set(i, result.get(i).add(new Value(1)));
+                    case SumAggregate ->
+                            // Sum increases by addition.
+                            result.set(i, result.get(i).add(new Value(input.get(i))));
+                    case MinAggregate ->
+                            // Min is just the min.
+                            result.set(i, result.get(i).min(new Value(input.get(i))));
+                    case MaxAggregate ->
+                            // Max is just the max.
+                            result.set(i, result.get(i).max(new Value(input.get(i))));
                 }
             }
         }
@@ -139,8 +129,6 @@ public class AggregationExecutor extends AbstractExecutor {
         /**
          * Inserts a value into the hash table and then combines it with the current aggregation.
          *
-         * @param agg_key the key to be inserted
-         * @param agg_val the value to be inserted
          */
         public void insertCombine(AggregateKey aggKey, AggregateValue aggVal) {
             if (ht.get(aggKey) == null) {

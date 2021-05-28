@@ -1,6 +1,7 @@
 package main.common;
 
-public class Constants {
+public class Constants
+{
     // representing an invalid page id
     public static final int INVALID_PAGE_ID  = -1;
     public static final int PAGE_SIZE  = 512;     // size of a data page in byte
@@ -9,7 +10,4 @@ public class Constants {
     public static final char COLUMN_SEP = '\t';
     public static final char LINE_SEP = '\n';
 
-//        typedef int32_t lsn_t;     // log sequence number type
-//
-//    }
 }

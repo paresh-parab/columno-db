@@ -10,7 +10,7 @@ import static main.common.Constants.INVALID_PAGE_ID;
 import static main.common.Constants.PAGE_SIZE;
 import static main.storage.index.IndexPageType.INTERNAL_PAGE;
 
-public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Comparator> extends BPlusTreePage{
+public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Comparator> extends BPlusTreePage {
 
     private static Instrumentation instrumentation;
 
@@ -167,6 +167,7 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
                     recipient.array.set(i - copyIdx, new Pair<>((Pair<KeyType, ValueType>)array.get(i)));
                     //update children's parent page
                     IndexPage<KeyType, ValueType> childRawPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue());
+
                     BPlusTreePage childTreePage = new BPlusTreePage(childRawPage);
                     childTreePage.setParentPageID(recipPageId);
                     buffer_pool_manager.unpinPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue(), true);
@@ -242,6 +243,7 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
 
                 //update children's parent page
                 IndexPage<KeyType, ValueType> childRawPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue());
+
                 BPlusTreePage childTreePage = (BPlusTreePage) childRawPage.getData();
                 childTreePage.setParentPageID(recipPageId);
                 buffer_pool_manager.unpinPage((Integer) ((Pair<KeyType, ValueType>)array.get(i)).getValue(), true);
