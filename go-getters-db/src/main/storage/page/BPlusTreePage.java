@@ -25,7 +25,7 @@ public class BPlusTreePage<KeyType, ValueType> {
 
     List<Pair<KeyType, ValueType>> array ;
 
-    public BPlusTreePage(Page<Pair<KeyType, ValueType>> page){
+    public BPlusTreePage(IndexPage<KeyType, ValueType> page){
         setPageID(page.getPageID());
         array = page.getData();
     }

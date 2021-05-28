@@ -17,7 +17,7 @@ import static main.common.Constants.INVALID_PAGE_ID;
 public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
 
 
-//    Mutex mutex ;
+    //Mutex mutex ;
     private int rootLockedCount = 0;
 
     private String index_name;
@@ -78,7 +78,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         //buffer pool dependency
         try{
             int newPageID = 0;
-            Page<Pair<KeyType, ValueType>> rootPage = buffer_pool_manager.newPage(newPageID);
+            IndexPage<KeyType, ValueType> rootPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(newPageID);
             if(rootPage == null)
                 throw new Exception("Unable to create fresh root page");
 
@@ -139,7 +139,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     private BPlusTreeLeafPage  split(BPlusTreeLeafPage node) {
         //step 1 ask for new page from buffer pool manager
         int newPageID = 0;
-        Page<Pair<KeyType, ValueType>> newPage = buffer_pool_manager.newPage(newPageID);
+        IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(newPageID);
         //assert(newPage != nullptr);
         newPage.wLatch();
         //step 2 move half of key & value pairs from input page to newly created page
@@ -153,7 +153,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     private BPlusTreeInternalPage split(BPlusTreeInternalPage node) {
         //step 1 ask for new page from buffer pool manager
         int newPageID = 0;
-        Page<Pair<KeyType, ValueType>> newPage = buffer_pool_manager.newPage(newPageID);
+        IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(newPageID);
         //assert(newPage != nullptr);
         newPage.wLatch();
         //step 2 move half of key & value pairs from input page to newly created page
@@ -177,7 +177,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     private void insertIntoParent(BPlusTreePage oldNode, KeyType key, BPlusTreePage newNode) {
         try{
             if (oldNode.isRootPage()) {
-                Page<Pair<KeyType, ValueType>> newPage = buffer_pool_manager.newPage(rootPageID);
+                IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(rootPageID);
                 if(newPage == null || newPage.getPinCount() == 1){
                     throw new Exception("Unable to create fresh page");
                 }
@@ -193,7 +193,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
                 return;
             }
             int parentID = oldNode.getParentPageID();
-            Page<Pair<KeyType, ValueType>> page = fetchPage(parentID);
+            IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) fetchPage(parentID);
             if(page == null)
                 throw new Exception("Unable to create new Page");
             BPlusTreeInternalPage parent = new BPlusTreeInternalPage(page);
@@ -256,7 +256,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         //Let N2 be the previous or next child of parent(N)
         N node2 = null;
         boolean isRightSib = findLeftSibling(node,node2);
-        Page<Pair<KeyType, ValueType>> parent = fetchPage(node.getParentPageID());
+        IndexPage<KeyType, ValueType> parent = (IndexPage<KeyType, ValueType>) fetchPage(node.getParentPageID());
         BPlusTreeInternalPage parentPage = new BPlusTreeInternalPage(parent);
         //if (entries in N and N2 can fit in a single node)
         if (node.getSize() + node2.getSize() <= node.getMaxSize()) {
@@ -282,7 +282,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
 
 
     private <N extends BPlusTreePage> boolean findLeftSibling(N node, N sibling) {
-        Page<Pair<KeyType, ValueType>> page = fetchPage(node.getParentPageID());
+        IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) fetchPage(node.getParentPageID());
         BPlusTreeInternalPage parent = new BPlusTreeInternalPage(page);
         int index = parent.valueIndex(node.getPageID());
         int siblingIndex = index - 1;
@@ -370,7 +370,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
                 rootPageID = newRootId;
                 updateRootPageID();
                 // set the new root's parent id "INVALID_PAGE_ID"
-                Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(newRootId);
+                IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(newRootId);
                 //assert(page != nullptr);
                 BPlusTreeInternalPage newRoot = new BPlusTreeInternalPage(page);
                 newRoot.setParentPageID(INVALID_PAGE_ID);
@@ -453,15 +453,15 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         return (BPlusTreeLeafPage) pointer;
     }
 
-    private Page<Pair<KeyType, ValueType>> fetchPage(int page_id) {
-        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(page_id);
+    private IndexPage<KeyType, ValueType> fetchPage(int page_id) {
+        IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(page_id);
         return page;
     }
 
 
     private BPlusTreePage crabingProtocalFetchPage(int page_id, OpType op, int previous) {
         boolean exclusive = op != OpType.READ;
-        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(page_id);
+        IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(page_id);
         lock(exclusive,page);
         BPlusTreePage treePage = new BPlusTreePage(page);
 
@@ -500,7 +500,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
 
         try{
             if (isEmpty()) return 1;
-            Page node = buffer_pool_manager.fetchPage(pid);
+            IndexPage<KeyType, ValueType> node = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(pid);
             BPlusTreePage pageNode = new BPlusTreePage(node);
 
             if (node == null) {
@@ -536,7 +536,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     public boolean isPageCorr(int pid, Pair<KeyType,KeyType> out) {
         try{
             if (isEmpty()) return true;
-            Page node = buffer_pool_manager.fetchPage(pid);
+            IndexPage<KeyType, ValueType> node = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(pid);
             BPlusTreePage pageNode = new BPlusTreePage(node);
 
             if (node == null) {
@@ -584,19 +584,19 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     }
 
 
-    public boolean check(boolean forceCheck) {
-        if (!forceCheck && !openCheck) {
-            return true;
-        }
-        Pair<KeyType,KeyType> in = new Pair<>();
-        boolean isPageInOrderAndSizeCorr = isPageCorr(rootPageID, in);
-        boolean isBal = isBalanced(rootPageID) != 0;
-        boolean isAllUnpin = buffer_pool_manager.checkAllUnpined();
-        if (!isPageInOrderAndSizeCorr) System.out.println("problem in page order or page size");
-        if (!isBal) System.out.println("problem in balance");
-        if (!isAllUnpin) System.out.println("problem in page unpin");
-        return isPageInOrderAndSizeCorr && isBal && isAllUnpin;
-    }
+//    public boolean check(boolean forceCheck) {
+//        if (!forceCheck && !openCheck) {
+//            return true;
+//        }
+//        Pair<KeyType,KeyType> in = new Pair<>();
+//        boolean isPageInOrderAndSizeCorr = isPageCorr(rootPageID, in);
+//        boolean isBal = isBalanced(rootPageID) != 0;
+//        boolean isAllUnpin = buffer_pool_manager.checkAllUnpined();
+//        if (!isPageInOrderAndSizeCorr) System.out.println("problem in page order or page size");
+//        if (!isBal) System.out.println("problem in balance");
+//        if (!isAllUnpin) System.out.println("problem in page unpin");
+//        return isPageInOrderAndSizeCorr && isBal && isAllUnpin;
+//    }
 
 
     private void lock(boolean exclusive, Page page) {
@@ -614,7 +614,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     }
 
     private void unlock(boolean exclusive, int pageID) {
-        Page<Pair<KeyType, ValueType>> page = buffer_pool_manager.fetchPage(pageID);
+        IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(pageID);
         unlock(exclusive, page);
         buffer_pool_manager.unpinPage(pageID, exclusive);
     }

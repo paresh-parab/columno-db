@@ -3,6 +3,8 @@ package main.catalog;
 import main.execution.expressions.AbstractExpression;
 import main.type.TypeID;
 
+import java.util.Objects;
+
 public class Column {
 
     private String columnName;
@@ -70,5 +72,6 @@ public class Column {
     public AbstractExpression getExpr() {
         return expr;
     }
+
 
 }

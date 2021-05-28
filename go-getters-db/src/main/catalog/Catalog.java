@@ -1,9 +1,12 @@
 package main.catalog;
 
 import main.buffer.BufferPoolManager;
+import main.storage.index.BPlusTree;
 import main.storage.table.TableHeap;
 
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Catalog {
@@ -64,6 +67,10 @@ public class Catalog {
     /** The next table identifier to be used. */
     private int nextTableOID = 0;
 
+
+    /** indices: storing table id against column and index root page ID map entries */
+    private Map<Integer, Map<Column, BPlusTree>> indices = new HashMap<>();
+
     Catalog(BufferPoolManager bpm) {
         this.bpm = bpm;
     }
@@ -82,11 +89,11 @@ public class Catalog {
             int tableOID = nextTableOID;
             nextTableOID++;
             names.put(tableName, tableOID);
-            tables.put( tableOID, new TableMetadata( schema, tableName, new TableHeap(bpm), tableOID));
+            tables.put( tableOID, new TableMetadata( schema, tableName, new TableHeap(bpm, schema), tableOID));
             return tables.get(tableOID);
 
         }catch( Exception e){
-            System.out.println("Program terminated due to exception: "+ e.getMessage());
+            System.out.println("Program terminated due to exception: " + e.getMessage());
             System.out.println(e.getStackTrace());
             System.exit(0);
         }
@@ -119,6 +126,58 @@ public class Catalog {
             System.out.println("Program terminated due to exception: "+ e.getMessage());
             System.out.println(e.getStackTrace());
             System.exit(0);
+        }
+        return null;
+    }
+
+    public boolean createIndex(int tableOID, String column){
+
+        if( !tables.containsKey(tableOID) )
+            //table OID is invalid
+            return false;
+        List<Column> columnList = tables.get(tableOID).schema.getColumns();
+        Column targetColumn = null;
+        for(Column c: columnList){
+            if(c.getName().equals(column)){
+                targetColumn = c;
+            }
+        }
+
+        if(targetColumn == null)
+            return false;
+        BPlusTree tree = getBPlusTree(targetColumn);
+        Map<Column, BPlusTree> indexMap;
+
+        if(indices.containsKey(tableOID)){
+            indexMap = indices.get(tableOID);
+        }else{
+            indexMap = new HashMap<>();
+        }
+
+        indexMap.put(targetColumn, tree);
+
+
+
+
+        return true;
+    }
+
+    private BPlusTree getBPlusTree(Column c){
+        switch (c.getType()){
+            case STRING_TYPE :
+                return new BPlusTree<String, Integer, Comparator<String>>(c.getName(), bpm, new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    return o1.compareTo(o2);
+                }
+            });
+            case INTEGER_TYPE:
+                return new BPlusTree<Integer, Integer, Comparator<Integer>>(c.getName(), bpm, new Comparator<Integer>() {
+                    @Override
+                    public int compare(Integer o1, Integer o2) {
+                        return o1.compareTo(o2);
+                    }
+                });
         }
         return null;
     }

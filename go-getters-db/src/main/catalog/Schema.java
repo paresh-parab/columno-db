@@ -3,6 +3,8 @@ package main.catalog;
 import java.util.ArrayList;
 import java.util.List;
 
+import static main.common.Constants.COLUMN_SEP;
+
 public class Schema {
 
     /** All the columns in the schema, inlined and uninlined. */
@@ -59,4 +61,13 @@ public class Schema {
         return columns.size();
     }
 
+    public String getColumnTypes() {
+        StringBuilder s = new StringBuilder();
+        for(Column c: columns){
+            s.append(c.getType());
+            s.append(COLUMN_SEP);
+        }
+        s.deleteCharAt(s.length()-1);
+        return s.toString();
+    }
 }

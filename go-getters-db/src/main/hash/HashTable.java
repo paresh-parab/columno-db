@@ -1,9 +1,10 @@
 package main.hash;
 
-public abstract class HashTable<KeyType, ValueType>
+public abstract class HashTable<K, V>
 {
-    public abstract void insert(KeyType key, ValueType value);
-    public abstract boolean find(KeyType pageID, ValueType tar);
+    public abstract void insert(K key, V value);
 
-    public abstract void remove(KeyType pageID);
+    public abstract V find(K pageID, V tar);
+
+    public abstract boolean remove(K pageID);
 }
