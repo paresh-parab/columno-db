@@ -41,9 +41,6 @@ public class TablePage extends Page{
 
         res.append(super.toString());
 
-        res.append(schema == null ? "" : schema.getColumnTypes());
-        res.append(LINE_SEP);
-
         for(Tuple entry: data){
             res.append(entry.toString());
             res.append(LINE_SEP);
@@ -53,38 +50,28 @@ public class TablePage extends Page{
 
     public void initializePageFromString(String input) {
 
-
+        //assuming schema is already set
         super.initializePageFromString(input);
 
         String[] parts = input.split(LINE_SEP);
 
-        List<TypeID> typeList = new ArrayList<>();
-
-        if(parts.length < 6){
-            return;
-        }
-
-        String[] types = parts[5].split(COLUMN_SEP);
-
-        for(String t:types){
-            typeList.add(TypeID.valueOf(t));
-        }
-
         resetMemory();
 
-        for(int i=6; i <parts.length; i++){
+        List<TypeID> colTypes = schema.getColumnTypes();
+
+        for(int i=5; i <parts.length; i++){
             String[] row = parts[i].split(COLUMN_SEP);
             List<Value> values = new ArrayList<>();
-            for(int j=0; j< typeList.size(); j++){
-                switch(typeList.get(j)){
+            for(int j=0; j< colTypes.size(); j++){
+                switch(colTypes.get(j)){
                     case STRING_TYPE :
                         values.add(new Value(row[j]));
                         break;
                     case BOOLEAN_TYPE:
-                        values.add(new Value(Integer.valueOf(row[j])));
+                        values.add(new Value(Boolean.valueOf(row[j])));
                         break;
                     case INTEGER_TYPE:
-                        values.add(new Value(Boolean.valueOf(row[j])));
+                        values.add(new Value(Integer.valueOf(row[j])));
                         break;
                 }
             }
