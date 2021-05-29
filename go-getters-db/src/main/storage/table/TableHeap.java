@@ -3,6 +3,7 @@ package main.storage.table;
 import main.buffer.BufferPoolManager;
 import main.catalog.Schema;
 import main.storage.page.TablePage;
+import main.type.PageType;
 import main.type.TypeID;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class TableHeap {
 
     public TableHeap(BufferPoolManager bpm, Schema schema) {
         this.bpm = bpm;
-        TablePage firstPage = (TablePage) bpm.newPage(firstPageID);
+        TablePage firstPage = (TablePage) bpm.newPage(PageType.TABLE);
         this.firstPageID = firstPage.getPageID();
         firstPage.setSchema(schema);
         bpm.unpinPage(firstPageID, true);
@@ -56,7 +57,7 @@ public class TableHeap {
                 currentPage.wLatch();
             } else {
                 // Otherwise we have run out of valid pages. We need to create a new page.
-                TablePage newPage = (TablePage) bpm.newPage(nextPageID);
+                TablePage newPage = (TablePage) bpm.newPage(PageType.TABLE);
                 // If we could not create a new page,
                 if (newPage == null) {
                     // Then life sucks and we abort the transaction.
