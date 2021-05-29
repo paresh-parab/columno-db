@@ -41,26 +41,30 @@ public class TablePage extends Page{
 
         res.append(super.toString());
 
-        res.append(schema.getColumnTypes());
+        res.append(schema == null ? "" : schema.getColumnTypes());
         res.append(LINE_SEP);
 
         for(Tuple entry: data){
             res.append(entry.toString());
             res.append(LINE_SEP);
         }
-        res.deleteCharAt(res.length()-1);
-        return res.toString();
+        return res.substring(0, res.length()-LINE_SEP.length());
     }
 
     public void initializePageFromString(String input) {
 
+
         super.initializePageFromString(input);
 
-        String[] parts = input.split(String.valueOf(LINE_SEP));
+        String[] parts = input.split(LINE_SEP);
 
         List<TypeID> typeList = new ArrayList<>();
 
-        String[] types = parts[5].split(String.valueOf(COLUMN_SEP));
+        if(parts.length < 6){
+            return;
+        }
+
+        String[] types = parts[5].split(COLUMN_SEP);
 
         for(String t:types){
             typeList.add(TypeID.valueOf(t));
@@ -69,7 +73,7 @@ public class TablePage extends Page{
         resetMemory();
 
         for(int i=6; i <parts.length; i++){
-            String[] row = parts[i].split(String.valueOf(COLUMN_SEP));
+            String[] row = parts[i].split(COLUMN_SEP);
             List<Value> values = new ArrayList<>();
             for(int j=0; j< typeList.size(); j++){
                 switch(typeList.get(j)){

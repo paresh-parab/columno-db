@@ -26,6 +26,17 @@ public abstract class Page {
             = rwlatch.writeLock();
     private final Lock readLock = rwlatch.readLock();
 
+    public void setPinCount(int pinCount) {
+        this.pinCount = pinCount;
+    }
+
+    public boolean isDirty() {
+        return isDirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        isDirty = dirty;
+    }
 
     public Page() {
     }
@@ -96,7 +107,8 @@ public abstract class Page {
 
     public void initializePageFromString(String input) {
 
-        String[] parts = input.split(String.valueOf(LINE_SEP));
+
+        String[] parts = input.split(LINE_SEP);
 
         count = Integer.parseInt(parts[0]);
         isDirty = Boolean.parseBoolean(parts[1]);
