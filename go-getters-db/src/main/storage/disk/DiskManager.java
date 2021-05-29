@@ -129,7 +129,7 @@ public class DiskManager
                 return null;
             }
         }
-        return new String(pageData, StandardCharsets.UTF_8);
+        return new String(pageData, StandardCharsets.UTF_8).replaceAll("\0", "");
     }
 
     public String readLog(int offset)

@@ -34,21 +34,20 @@ public class IndexPage<KeyType, ValueType> extends Page{
             res.append(entry.toString());
             res.append(LINE_SEP);
         }
-        res.deleteCharAt(res.length()-1);
-        return res.toString();
+        return res.substring(0, res.length()-LINE_SEP.length());
     }
 
     public void initializePageFromString(String input) {
 
         super.initializePageFromString(input);
 
-        String[] parts = input.split(String.valueOf(LINE_SEP));
+        String[] parts = input.split(LINE_SEP);
 
         resetMemory();
 
         for(int i=5; i <parts.length; i++){
-            String[] row = parts[i].split(String.valueOf(COLUMN_SEP));
-            String[] pairParts = parts[i].split(String.valueOf(COLUMN_SEP));
+            String[] row = parts[i].split(COLUMN_SEP);
+            String[] pairParts = parts[i].split(COLUMN_SEP);
             data.add(new Pair((KeyType)pairParts[0], (ValueType) pairParts[1]));
         }
 
