@@ -2,6 +2,7 @@ package main.storage.table;
 
 import main.buffer.BufferPoolManager;
 import main.catalog.Schema;
+import main.common.Pair;
 import main.storage.page.TablePage;
 import main.type.PageType;
 import main.type.TypeID;
@@ -16,7 +17,6 @@ public class TableHeap {
 
     private BufferPoolManager bpm;
     private int firstPageID;
-
 
     public TableHeap(BufferPoolManager bpm, Schema schema) {
         this.bpm = bpm;
@@ -82,17 +82,18 @@ public class TableHeap {
         return true;
     }
 
-    public List getColumnValues(TypeID type) {
+    public List getColumnValues(int colIdx, TypeID type) {
 
         List result = null;
 
         if(type == TypeID.STRING_TYPE){
-            result = new ArrayList<String>();
+            result = new ArrayList<Pair<String, Integer>>();
         }else{
-            result = new ArrayList<Integer>();
+            result = new ArrayList<Pair<String, Integer>>();
         }
 
         int nextPageID = firstPageID;
+
         do {
             TablePage currentPage = (TablePage) bpm.fetchPage(nextPageID);
             if (currentPage == null) {
@@ -100,8 +101,26 @@ public class TableHeap {
             }
             nextPageID = currentPage.getNextPageID();
             currentPage.wLatch();
-            result.addAll(currentPage.getData());
+
+            int currentPageID = currentPage.getPageID();
+            List<Tuple> currentTuples = currentPage.getData();
+            for(int i=0; i < currentTuples.size(); i++){
+
+                if(type == TypeID.STRING_TYPE){
+                    Pair<String, Integer> pair = new Pair<String, Integer>(currentTuples.get(i).getValue(colIdx).getAsString(),
+                            currentPageID + i);
+                    result.add(pair);
+
+                }else{
+                    Pair<Integer, Integer> pair = new Pair<Integer, Integer>(currentTuples.get(i).getValue(colIdx).getAsInteger(),
+                            currentPageID + i);
+                    result.add(pair);
+                }
+
+            }
+
             currentPage.wUnlatch();
+
         }while( nextPageID != INVALID_PAGE_ID);
         return result;
     }

@@ -1,5 +1,7 @@
 package main.catalog;
 
+import main.type.TypeID;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,13 +63,7 @@ public class Schema {
         return columns.size();
     }
 
-    public String getColumnTypes() {
-        StringBuilder s = new StringBuilder();
-        for(Column c: columns){
-            s.append(c.getType());
-            s.append(COLUMN_SEP);
-        }
-        s.deleteCharAt(s.length()-1);
-        return s.toString();
+    public List<TypeID> getColumnTypes() {
+        return columns.stream().map(c-> c.getType()).toList();
     }
 }

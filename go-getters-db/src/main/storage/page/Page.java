@@ -57,7 +57,7 @@ public abstract class Page {
 
     public void setPageID(int pageID) {
         this.pageID  = pageID;
-        this.nextPageID = this.pageID + 1;
+//        this.nextPageID = this.pageID + 1;
     }
 
     public int getPinCount() {

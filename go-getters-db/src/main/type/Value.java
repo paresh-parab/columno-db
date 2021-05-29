@@ -1,5 +1,7 @@
 package main.type;
 
+import java.util.Objects;
+
 public class Value {
 
     private Integer integer;
@@ -259,6 +261,22 @@ public class Value {
         if(typeID == TypeID.INTEGER_TYPE)
             return new Value((int) Math.sqrt(integer));
         return null;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        Value v = (Value)o;
+        if (this == v || v == null || typeID != v.typeID) return false;
+        switch (typeID){
+            case INTEGER_TYPE :
+                return integer.equals(v.integer);
+            case BOOLEAN_TYPE:
+                return bool.equals(v.bool);
+            case STRING_TYPE:
+                return string.equals(v.string);
+        }
+        return false;
     }
 
 

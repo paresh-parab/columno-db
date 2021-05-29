@@ -9,7 +9,7 @@ import main.execution.plans.InsertPlanNode;
 import main.execution.plans.PlanType;
 
 public class ExecutorFactory {
-    static AbstractExecutor createExecutor(ExecutorContext execCtx, AbstractPlanNode plan) {
+    public static AbstractExecutor createExecutor(ExecutorContext execCtx, AbstractPlanNode plan) {
         switch (plan.getType()) {
             // Create a new sequential scan executor.
 //            case PlanType.SeqScan: {

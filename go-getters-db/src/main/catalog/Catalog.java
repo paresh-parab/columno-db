@@ -71,7 +71,7 @@ public class Catalog {
     /** indices: storing table id against column and index root page ID map entries */
     private Map<Integer, Map<Column, BPlusTree>> indices = new HashMap<>();
 
-    Catalog(BufferPoolManager bpm) {
+    public Catalog(BufferPoolManager bpm) {
         this.bpm = bpm;
     }
 
@@ -155,10 +155,6 @@ public class Catalog {
         }
 
         indexMap.put(targetColumn, tree);
-
-
-
-
         return true;
     }
 
@@ -181,7 +177,6 @@ public class Catalog {
         }
         return null;
     }
-
 
     public Map<Integer, TableMetadata> getTables() {
         return tables;

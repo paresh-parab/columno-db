@@ -7,7 +7,7 @@ public class Constants
     public static final int PAGE_SIZE  = 512;     // size of a data page in byte
     public static final int HEADER_PAGE_ID = 0;
     public static final int BUCKET_SIZE = 100;
-    public static final String COLUMN_SEP = "\\t";
+    public static final String COLUMN_SEP = "\t";
     public static final String LINE_SEP =  System.lineSeparator();
 
 }
