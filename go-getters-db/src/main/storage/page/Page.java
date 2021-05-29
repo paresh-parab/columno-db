@@ -1,8 +1,5 @@
 package main.storage.page;
 
-import main.common.StringInitializable;
-
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.Lock;
@@ -101,13 +98,11 @@ public abstract class Page {
 
         String[] parts = input.split(String.valueOf(LINE_SEP));
 
-        count = Integer.valueOf(parts[0]);
-        isDirty = Boolean.valueOf(parts[1]);
-        nextPageID = Integer.valueOf(parts[2]);
-        pageID = Integer.valueOf(parts[3]);
-        pinCount = Integer.valueOf(parts[4]);
-
-        return;
+        count = Integer.parseInt(parts[0]);
+        isDirty = Boolean.parseBoolean(parts[1]);
+        nextPageID = Integer.parseInt(parts[2]);
+        pageID = Integer.parseInt(parts[3]);
+        pinCount = Integer.parseInt(parts[4]);
     }
 
 }

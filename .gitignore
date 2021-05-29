@@ -1,4 +1,4 @@
 .idea/
 ./go-getters-db/.idea
-.go-getters-db.iml
+./go-getters-db/go-getters-db.iml
 columno-db.iml

@@ -1,7 +1,6 @@
 package test.storage.disk;
 
 import main.storage.disk.DiskManager;
-import main.storage.page.Page;
 import org.junit.jupiter.api.Assertions;
 
 public class DiskManagerTest
@@ -9,45 +8,48 @@ public class DiskManagerTest
     @org.junit.jupiter.api.Test
     void DiskManagerTest1()
     {
-        Page<String> buffer = null;
+        String buffer = null;
+        String tempData = "A test String.";
 
-        String dbFile = "Sample_DB";
+        String dbFile = "Sample.db";
 
-        DiskManager<Page<String>> diskManager = new DiskManager<>(dbFile);
-        Page<String> tempPage = new Page<>();
-        tempPage.getData().add("A test string.");
+        DiskManager diskManager = new DiskManager(dbFile);
 
-        Assertions.assertNull(diskManager.readPage(0, buffer)); // tolerate empty read
+        Assertions.assertNull(diskManager.readPage(0)); // tolerate empty read
 
-        diskManager.writePage(0, tempPage);
-        buffer = diskManager.readPage(0, buffer);
-        Assertions.assertEquals(buffer.getData(), tempPage.getData());
+        diskManager.writePage(0, tempData);
+
+        buffer = diskManager.readPage(0);
+
+        if(buffer.equals(tempData)) assert true;
 
         buffer = null;
 
-        diskManager.writePage(5, tempPage);
-        buffer = diskManager.readPage(5, buffer);
+        diskManager.writePage(5, tempData);
+        buffer = diskManager.readPage(5);
 
-        Assertions.assertEquals(buffer.getData(), tempPage.getData());
+        if(buffer.equals(tempData)) assert true;
+
         diskManager.shutDown();
     }
 
     @org.junit.jupiter.api.Test
     void DiskManagerTest2()
     {
-        String buffer = "";
+        String buffer = null;
 
-        String dbFile = "test";
+        String dbFile = "Test.db";
 
-        DiskManager<String> diskManager = new DiskManager<>(dbFile);
-        String data = "A test string.";
+        DiskManager diskManager = new DiskManager(dbFile);
+        String tempData = "A test string.";
 
         Assertions.assertNull(diskManager.readLog(0)); // tolerate empty read
 
-        diskManager.writeLog(data);
+        diskManager.writeLog(tempData);
         buffer = diskManager.readLog(0);
 
-        Assertions.assertEquals(buffer, data);
+        if(buffer.equals(tempData)) assert true;
+
         diskManager.shutDown();
     }
 

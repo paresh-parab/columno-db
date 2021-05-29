@@ -1,7 +1,4 @@
 package main.storage.table;
-
-import main.catalog.Schema;
-import main.common.StringInitializable;
 import main.type.Value;
 
 import java.util.ArrayList;

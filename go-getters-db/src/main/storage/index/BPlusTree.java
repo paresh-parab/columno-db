@@ -4,6 +4,7 @@ import main.buffer.BufferPoolManager;
 import main.common.OpType;
 import main.common.Pair;
 import main.storage.page.*;
+import main.type.PageType;
 
 import java.util.Comparator;
 import java.util.List;
@@ -78,7 +79,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         //buffer pool dependency
         try{
             int newPageID = 0;
-            IndexPage<KeyType, ValueType> rootPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(newPageID);
+            IndexPage<KeyType, ValueType> rootPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(PageType.INDEX);
             if(rootPage == null)
                 throw new Exception("Unable to create fresh root page");
 
@@ -139,7 +140,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     private BPlusTreeLeafPage  split(BPlusTreeLeafPage node) {
         //step 1 ask for new page from buffer pool manager
         int newPageID = 0;
-        IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(newPageID);
+        IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(PageType.INDEX);
         //assert(newPage != nullptr);
         newPage.wLatch();
         //step 2 move half of key & value pairs from input page to newly created page
@@ -153,7 +154,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     private BPlusTreeInternalPage split(BPlusTreeInternalPage node) {
         //step 1 ask for new page from buffer pool manager
         int newPageID = 0;
-        IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(newPageID);
+        IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(PageType.INDEX);
         //assert(newPage != nullptr);
         newPage.wLatch();
         //step 2 move half of key & value pairs from input page to newly created page
@@ -177,7 +178,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     private void insertIntoParent(BPlusTreePage oldNode, KeyType key, BPlusTreePage newNode) {
         try{
             if (oldNode.isRootPage()) {
-                IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(rootPageID);
+                IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(PageType.INDEX);
                 if(newPage == null || newPage.getPinCount() == 1){
                     throw new Exception("Unable to create fresh page");
                 }

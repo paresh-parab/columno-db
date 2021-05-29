@@ -29,7 +29,7 @@ public class Schema {
 
     /**
      * Returns a specific column from the schema.
-     * @param col_idx index of requested column
+     * @param colIndx index of requested column
      * @return requested column
      */
     public Column getColumn(int colIndx) {
@@ -44,7 +44,7 @@ public class Schema {
     /**
      * Looks up and returns the index of the first column in the schema with the specified name.
      * If multiple columns have the same name, the first such index is returned.
-     * @param col_name name of column to look for
+     * @param colName name of column to look for
      * @return the index of a column with the given name, throws an exception if it does not exist
      */
     public int getColIdx(String colName) {
