@@ -5,6 +5,9 @@ public class RID {
     Integer pageId;
     Integer slotNum;
 
+    public RID() {
+    }
+
     public Integer getPageId() {
         return pageId;
     }

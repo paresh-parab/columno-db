@@ -5,6 +5,9 @@ public class Column {
     String typeId;
     Integer length;
 
+    public Column() {
+    }
+
     public Column(String columnName, String typeId, Integer length) {
         this.columnName = columnName;
         this.typeId = typeId;

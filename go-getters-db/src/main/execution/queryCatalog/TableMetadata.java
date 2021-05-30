@@ -5,6 +5,9 @@ public class TableMetadata {
     String tableName;
     Integer tableId;
 
+    public TableMetadata() {
+    }
+
     public TableMetadata(Schema schema, String tableName, Integer tableId) {
         this.schema = schema;
         this.tableName = tableName;
