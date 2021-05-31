@@ -3,18 +3,17 @@ package main.execution;
 import main.execution.executors.AbstractExecutor;
 import main.execution.executors.AggregationExecutor;
 import main.execution.executors.InsertExecutor;
-import main.execution.plans.AbstractPlanNode;
-import main.execution.plans.AggregationPlanNode;
-import main.execution.plans.InsertPlanNode;
-import main.execution.plans.PlanType;
+import main.execution.executors.SeqReadExecutor;
+import main.execution.plans.*;
 
 public class ExecutorFactory {
     public static AbstractExecutor createExecutor(ExecutorContext execCtx, AbstractPlanNode plan) {
         switch (plan.getType()) {
             // Create a new sequential scan executor.
-//            case PlanType.SeqScan: {
-//                return std::make_unique<SeqScanExecutor>(exec_ctx, dynamic_cast<const SeqScanPlanNode *>(plan));
-//            }
+            case SeqScan:{
+                SeqReadPlanNode readPlan = (SeqReadPlanNode) plan;
+                return new SeqReadExecutor(execCtx, readPlan);
+            }
 
             // Create a new insert executor.
             case Insert: {

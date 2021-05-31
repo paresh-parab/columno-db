@@ -125,5 +125,27 @@ public class TableHeap {
         return result;
     }
 
+    public List readAllRows() {
+
+        List result = new ArrayList<Tuple>();
+        int nextPageID = firstPageID;
+
+        do {
+            TablePage currentPage = (TablePage) bpm.fetchPage(nextPageID);
+            if (currentPage == null) {
+                break;
+            }
+            nextPageID = currentPage.getNextPageID();
+            currentPage.wLatch();
+
+            int currentPageID = currentPage.getPageID();
+            List<Tuple> currentTuples = currentPage.getData();
+            result.addAll(new ArrayList(currentTuples));
+            currentPage.wUnlatch();
+
+        }while( nextPageID != INVALID_PAGE_ID);
+        return result;
+    }
+
 
 }

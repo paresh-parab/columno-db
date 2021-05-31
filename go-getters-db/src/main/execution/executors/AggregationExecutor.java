@@ -27,7 +27,10 @@ public class AggregationExecutor extends AbstractExecutor {
          * @param other the other aggregate key to be compared with
          * @return true if both aggregate keys have equivalent group-by expressions, false otherwise
          */
-        public boolean equals(AggregateKey other) {
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            AggregateKey other = (AggregateKey) o;
             if (groupBys.size() != other.groupBys.size())
                 return false;
             for (int i = 0; i < other.groupBys.size(); i++) {
@@ -36,6 +39,11 @@ public class AggregationExecutor extends AbstractExecutor {
                 }
             }
             return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(groupBys);
         }
     }
 
@@ -59,8 +67,6 @@ public class AggregationExecutor extends AbstractExecutor {
         }
     }
 
-    ;
-
     /**
      * A simplified hash table that has all the necessary functionality for aggregations.
      */
@@ -68,7 +74,7 @@ public class AggregationExecutor extends AbstractExecutor {
 
         private List<AbstractExpression> aggExprs;
         private List<AggregationType> aggTypes;
-        private Map<AggregateKey, AggregateValue> ht;
+        private Map<AggregateKey, AggregateValue> ht = new HashMap<>();
 
         /**
          * Create a new simplified aggregation hash table.
@@ -170,6 +176,8 @@ public class AggregationExecutor extends AbstractExecutor {
         super(execCtx);
         this.plan = plan;
         this.child = child;
+        this.aht = new SimpleAggregationHashTable(plan.getAggregates(), plan.getAggregateTypes());
+        this.ahtIterator = aht.begin();
     }
 
     /**
@@ -220,7 +228,7 @@ public class AggregationExecutor extends AbstractExecutor {
     public AggregateKey makeKey(Tuple tuple) {
         List<Value> keys = new ArrayList<>();
         for (AbstractExpression expr : plan.getGroupBys()) {
-            keys.add(((AggregateValueExpression)expr).evaluate(tuple, child.getOutputSchema()));
+            keys.add(expr.evaluate(tuple, child.getOutputSchema()));
         }
         return new AggregateKey(keys);
     }
@@ -230,8 +238,8 @@ public class AggregationExecutor extends AbstractExecutor {
      */
     public AggregateValue makeVal(Tuple tuple) {
         List<Value> vals = new ArrayList<>();
-        for (AbstractExpression expr : plan.getGroupBys()) {
-            vals.add(((AggregateValueExpression)expr).evaluate(tuple, child.getOutputSchema()));
+        for (AbstractExpression expr : plan.getAggregates()) {
+            vals.add(expr.evaluate(tuple, child.getOutputSchema()));
         }
         return new AggregateValue(vals);
     }
