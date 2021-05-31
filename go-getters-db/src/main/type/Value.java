@@ -335,7 +335,13 @@ public class Value {
     }
 
     public Boolean getAsBoolean(){
-        return bool;
+
+        switch (typeID){
+            case BOOLEAN_TYPE : return  bool;
+            case INTEGER_TYPE: return integer != 0;
+            case STRING_TYPE: return !string.isEmpty();
+        }
+        return false;
     }
 
     public Integer getAsInteger(){
@@ -346,5 +352,8 @@ public class Value {
         return string;
     }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(integer, string, bool, typeID);
+    }
 }

@@ -9,9 +9,9 @@ import java.util.List;
 public class AggregationPlanNode extends AbstractPlanNode {
 
     private AbstractExpression having;
-    List<AbstractExpression> groupBys;
-    List<AbstractExpression> aggregates;
-    List<AggregationType> aggTypes;
+    private List<AbstractExpression> groupBys;
+    private List<AbstractExpression> aggregates;
+    private List<AggregationType> aggTypes;
 
     public AggregationPlanNode(Schema output_schema, AbstractPlanNode child, AbstractExpression having,
                                List<AbstractExpression> group_bys,
@@ -63,11 +63,13 @@ public class AggregationPlanNode extends AbstractPlanNode {
     public AbstractPlanNode getChildPlan() {
         try {
 
-            if (getChildren().size() == 1)
+            if (getChildren().size() != 1)
                 throw new Exception("Aggregation expected to only have one child.");
+
             return getChildAt(0);
+
         }catch(Exception e){
-                System.out.println("Program terminated due to exception: "+ e.getMessage());
+                System.out.println("Program terminated due to exception: " + e.getMessage());
                 System.out.println(e.getStackTrace());
                 System.exit(0);
             }

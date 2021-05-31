@@ -14,6 +14,10 @@ public class Tuple {
         this.content = content;
     }
 
+    public Tuple(Tuple t) {
+        this.content = new ArrayList<>(t.content);
+    }
+
     public List<Value> getContent() {
         return content;
     }
