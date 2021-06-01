@@ -1,4 +1,4 @@
-package test.storage.disk;
+package test.storage.storage.disk;
 
 import main.storage.disk.DiskManager;
 import org.junit.jupiter.api.Assertions;

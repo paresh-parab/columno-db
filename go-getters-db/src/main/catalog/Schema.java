@@ -38,10 +38,6 @@ public class Schema {
         return columns.get(colIndx);
     }
 
-    /**
-     * @param col_name name of the wanted column
-     * @return the column with the given name
-     */
 
     /**
      * Looks up and returns the index of the first column in the schema with the specified name.

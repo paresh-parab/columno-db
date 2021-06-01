@@ -278,10 +278,8 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
         // update child parent page id
         int childPageId = (int) pair.getValue();
         IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(childPageId);
-        //assert (page != nullptr);
         BPlusTreePage child = new BPlusTreePage(page);
         child.setParentPageID(recipient.getPageID());
-        //assert(child.getParentPageID() == recipient.GetPageID());
         buffer_pool_manager.unpinPage(child.getPageID(), true);
         //update relavent key & value pair in its parent page.
         page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(getParentPageID());
@@ -292,7 +290,6 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
 
 
     public void copyLastFrom(Pair<KeyType, ValueType> pair, BufferPoolManager buffer_pool_manager) {
-        //assert(GetSize() + 1 <= GetMaxSize());
         array.set(getSize(), pair);
         increaseSize(1);
     }
@@ -310,17 +307,14 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
 
 
     public void copyFirstFrom(Pair<KeyType, ValueType> pair, int parent_index, BufferPoolManager buffer_pool_manager) {
-        //assert(GetSize() + 1 < GetMaxSize());
         increaseSize(1);
         array.add(0, pair);
         array.remove(array.size()-1);
         // update child parent page id
         int childPageId = (int) pair.getValue();
         IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(childPageId);
-        //assert (page != nullptr);
         BPlusTreePage child = new BPlusTreePage(page);
         child.setParentPageID(getPageID());
-        //assert(child->GetParentPageId() == GetPageId());
         buffer_pool_manager.unpinPage(child.getPageID(), true);
         //update relavent key & value pair in its parent page.
         page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(getParentPageID());

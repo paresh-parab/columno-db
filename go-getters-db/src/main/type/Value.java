@@ -305,16 +305,6 @@ public class Value {
     }
 
 
-//    public void SerializeTo(char *storage) const {
-//        Type::GetInstance(type_id_)->SerializeTo(*this, storage);
-//    }
-//
-//    // Deserialize a value of the given type from the given storage space.
-//    inline static Value DeserializeFrom(const char *storage,
-//                                      const TypeId type_id) {
-//        return Type::GetInstance(type_id)->DeserializeFrom(storage);
-//    }
-
     // Return a string version of this value
     public String toString() {
         switch (typeID){
