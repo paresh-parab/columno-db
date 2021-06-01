@@ -25,14 +25,12 @@ public class Column {
      */
     public Column(String columnName, TypeID type) {
         this(columnName, type, null);
-        //BUSTUB_ASSERT(type != TypeId::VARCHAR, "Wrong constructor for VARCHAR type.");
     }
 
     public Column(String columnName, TypeID type, AbstractExpression expr) {
         this.columnName = columnName;
         this.columnType = type;
         this.expr = expr;
-        //BUSTUB_ASSERT(type != TypeId::VARCHAR, "Wrong constructor for VARCHAR type.");
     }
 
     /**
@@ -45,14 +43,12 @@ public class Column {
      */
     public Column(String columnName, TypeID type, int length) {
         this(columnName, type, length, null);
-        //BUSTUB_ASSERT(type != TypeId::VARCHAR, "Wrong constructor for VARCHAR type.");
     }
 
     public Column(String columnName, TypeID type, int length, AbstractExpression expr) {
         this.columnName = columnName;
         this.columnType = type;
         this.expr = expr;
-        //BUSTUB_ASSERT(type != TypeId::VARCHAR, "Wrong constructor for VARCHAR type.");
     }
 
     /**

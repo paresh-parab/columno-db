@@ -15,6 +15,8 @@ import static java.lang.System.exit;
 
 import java.util.List;
 
+import static main.common.Constants.DEBUGGER;
+
 public class InsertExecutor extends AbstractExecutor {
 
         private InsertPlanNode plan;
@@ -38,35 +40,42 @@ public class InsertExecutor extends AbstractExecutor {
 
         @Override
         public void init() {
+                DEBUGGER.info("Initializing Insertion Executor");
+
                 Catalog catalog = this.getExecutorContext().getCatalog();
                 this.table = catalog.getTable(this.plan.getTableOID()).getTable();
                 // Initialize all children
                 if (!this.plan.isRawInsert()) {
                         this.childExe.init();
                 }
+                DEBUGGER.info("Succesfully initialized Insertion Executor");
+
         }
 
         @Override
         public boolean next(Tuple[] tuples ) {
                 // is raw insert -> get all raw tuples and insert
+                DEBUGGER.info("Invoking Insertion Executor");
+
                 Tuple tuple = null;
                 if (this.plan.isRawInsert()) {
                         int numberOfTups = this.plan.getRawValues().size();
                         for (int idx = 0; idx < numberOfTups; idx++) {
                                 tuple = new Tuple(this.plan.rawValuesAt(idx));
                                 boolean success = this.table.insertTuple(tuple);
-                                // LOG_DEBUG("Insert tuple successfully: %s", tuple.ToString(this->GetOutputSchema()).c_str());
                                 if (!success) return success;
+                                DEBUGGER.info("Inserted following tuple into table :"+ tuple.toString());
                         }
-                        // LOG_DEBUG("Insert %d tuples into table", int(numberOfTups));
+                        DEBUGGER.info("Inserted "+ numberOfTups + " tuples into table");
+                        DEBUGGER.info("Exiting Insertion Executor");
                         return true;
                 }
                 // get tuples from child executor, and then insert them
                 while (this.childExe.next(tuples)) {
-                        // LOG_DEBUG("Read tuple: %s", tuple.ToString(this->GetOutputSchema()).c_str());
                         boolean success = this.table.insertTuple(tuple);
                         if (!success) return success;
                 }
+                DEBUGGER.info("Exiting Insertion Executor");
                 return true;
         }
 

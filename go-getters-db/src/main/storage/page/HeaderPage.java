@@ -6,8 +6,6 @@ import main.common.Ref;
 public class HeaderPage extends IndexPage<String, Integer> {
 
     public boolean insertRecord(String name, int rootID) {
-        //assert (name.length() < 32);
-        //assert (rootID > INVALID_PAGE_ID);
 
         int recordCount = getRecordCount();
         // check for duplicate name
@@ -21,7 +19,6 @@ public class HeaderPage extends IndexPage<String, Integer> {
 
     public boolean deleteRecord(String name) {
         int recordNum = getRecordCount();
-        //assert (recordNum > 0);
 
         int index = findRecord(name);
         // record does not exsit

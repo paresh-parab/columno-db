@@ -6,6 +6,8 @@ import main.execution.expressions.AbstractExpression;
 import java.util.ArrayList;
 import java.util.List;
 
+import static main.common.Constants.DEBUGGER;
+
 public class AggregationPlanNode extends AbstractPlanNode {
 
     private AbstractExpression having;
@@ -13,16 +15,17 @@ public class AggregationPlanNode extends AbstractPlanNode {
     private List<AbstractExpression> aggregates;
     private List<AggregationType> aggTypes;
 
-    public AggregationPlanNode(Schema output_schema, AbstractPlanNode child, AbstractExpression having,
+    public AggregationPlanNode(Schema outputSchema, AbstractPlanNode child, AbstractExpression having,
                                List<AbstractExpression> group_bys,
                                List<AbstractExpression> aggregates, List<AggregationType> agg_types){
-        super(output_schema, new ArrayList<AbstractPlanNode>(){{
+        super(outputSchema, new ArrayList<AbstractPlanNode>(){{
             add(child);
         }});
         this.having = having;
         this.groupBys = group_bys;
         this.aggregates = new ArrayList<>(aggregates);
         this.aggTypes = new ArrayList<>(agg_types);
+        DEBUGGER.info("Initiated Aggregation Plan with group bys and aggregation types");
     }
 
     /** @return the having clause */
