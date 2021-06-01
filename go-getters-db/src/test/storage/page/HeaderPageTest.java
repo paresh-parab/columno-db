@@ -1,4 +1,4 @@
-package test.storage.page;
+package test.storage.storage.page;
 
 import main.storage.page.HeaderPage;
 import main.common.Ref;

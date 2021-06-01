@@ -5,6 +5,8 @@ import main.type.Value;
 import java.util.ArrayList;
 import java.util.List;
 
+import static main.common.Constants.DEBUGGER;
+
 public class InsertPlanNode extends AbstractPlanNode {
     List<List<Value>> rawValues;
     /**
@@ -23,6 +25,7 @@ public class InsertPlanNode extends AbstractPlanNode {
         super(null, new ArrayList<>());
         this.rawValues = new ArrayList<>(rawValues);
         this.tableOID = tableOID;
+        DEBUGGER.info("Initiated Insert Plan with Table ID :"+ tableOID);
     }
 
     /**
@@ -36,6 +39,7 @@ public class InsertPlanNode extends AbstractPlanNode {
             add(child);
         }});
         this.tableOID = tableOID;
+        DEBUGGER.info("Initiated Insert Plan with Table ID :"+ tableOID);
     }
 
 
@@ -62,7 +66,6 @@ public class InsertPlanNode extends AbstractPlanNode {
      * @return the raw values to be inserted at the particular index
      */
     public List<Value> rawValuesAt(int idx) {
-        //BUSTUB_ASSERT(IsRawInsert(), "This is not a raw insert, you should use the child plan.");
         return rawValues.get(idx);
     }
 
@@ -70,7 +73,6 @@ public class InsertPlanNode extends AbstractPlanNode {
      * @return the raw values to be inserted
      */
     public List<List<Value>> getRawValues() {
-        //BUSTUB_ASSERT(IsRawInsert(), "This is not a raw insert, you should use the child plan.");
         return rawValues;
     }
 
@@ -78,8 +80,6 @@ public class InsertPlanNode extends AbstractPlanNode {
      * @return the child plan providing tuples to be inserted
      */
     public AbstractPlanNode getChildPlan() {
-        //BUSTUB_ASSERT(!IsRawInsert(), "This is a raw insert, no child plan should be used.");
-        //BUSTUB_ASSERT(GetChildren().size() == 1, "Insert should have at most one child plan.");
         return getChildAt(0);
     }
 

@@ -8,8 +8,7 @@ import main.type.Value;
 import java.util.ArrayList;
 import java.util.List;
 
-import static main.common.Constants.COLUMN_SEP;
-import static main.common.Constants.LINE_SEP;
+import static main.common.Constants.*;
 
 public class TablePage extends Page{
     private List<Tuple> data;
@@ -37,6 +36,8 @@ public class TablePage extends Page{
 
 
     public String toString() {
+        DEBUGGER.info("Converting page object to raw string");
+
         StringBuilder res = new StringBuilder();
 
         res.append(super.toString());
@@ -49,6 +50,7 @@ public class TablePage extends Page{
     }
 
     public void initializePageFromString(String input) {
+        DEBUGGER.info("Initializing page object from raw string");
 
         //assuming schema is already set
         super.initializePageFromString(input);

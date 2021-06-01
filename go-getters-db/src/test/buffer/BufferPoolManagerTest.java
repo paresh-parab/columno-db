@@ -1,4 +1,4 @@
-package test.buffer;
+package test.storage.buffer;
 import main.buffer.BufferPoolManager;
 import main.catalog.Column;
 import main.catalog.Schema;
@@ -92,10 +92,11 @@ public class BufferPoolManagerTest
         }
 
         // fetch page one again
-        Page pageRead = new TablePage();
+        TablePage pageRead = new TablePage();
         String page = diskManager.readPage(0);
-        pageRead.initializePageFromString(diskManager.readPage(0));
+        pageRead.initializePageFromString(page);
         pageZero = bufferPoolManager.fetchPage(0);
+
 
         // check read content
         assertEquals(pageRead.toString(), pageZero.toString());
