@@ -231,7 +231,6 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
         //update relavent key & value pair in its parent page.
         IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(getParentPageID());
         BPlusTreeInternalPage parent = (BPlusTreeInternalPage) page.getData();
-        //it should be array.get(1) as parent is internal page and keys start from 1, values start from 0
         parent.setKeyAt(parent.valueIndex(getPageID()), ((Pair<KeyType, ValueType>)array.get(0)).getKey());
         buffer_pool_manager.unpinPage(getParentPageID(), true);
     }

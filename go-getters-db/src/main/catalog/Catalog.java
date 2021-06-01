@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static main.common.Constants.DEBUGGER;
+
 public class Catalog {
 
     public class TableMetadata {
@@ -23,7 +25,6 @@ public class Catalog {
             this.table = table;
             this.oid = oid;
         }
-
 
         public Schema getSchema() {
             return schema;
@@ -74,17 +75,23 @@ public class Catalog {
     private Map<Integer, Map<Column, BPlusTree>> indices = new HashMap<>();
 
     public Catalog(BufferPoolManager bpm) {
+        DEBUGGER.info("Initiating Tables' catalog");
         this.bpm = bpm;
     }
 
     public TableMetadata createTable(String tableName, Schema schema) {
+        DEBUGGER.info("Registering new table "+ tableName +" in catalog");
         try{
+            DEBUGGER.info("Checking if table with same name already exists in catalog");
             if(names.get(tableName) != null)
                 throw new Exception("Table names should be unique! ");
+            DEBUGGER.info("It does not :)");
+
             int tableOID = nextTableOID;
             nextTableOID++;
             names.put(tableName, tableOID);
             tables.put( tableOID, new TableMetadata( schema, tableName, new TableHeap(bpm, schema), tableOID));
+            DEBUGGER.info("Table metadata saved in the catalog");
             return tables.get(tableOID);
 
         }catch( Exception e){
@@ -115,6 +122,7 @@ public class Catalog {
 
     /** @return table metadata by name */
     public TableMetadata getTable(String tableName) {
+        DEBUGGER.info("Finding metadata for " + tableName + " table from catalog");
         try{
             if (names.get(tableName) == null) {
                 throw new Exception("Can't find table: " + tableName);
@@ -130,6 +138,8 @@ public class Catalog {
 
     /** @return table metadata by oid */
     public TableMetadata getTable(int tableOID) {
+        DEBUGGER.info("Finding metadata for Table ID "+ tableOID +" from catalog");
+
         try{
             if (tables.get(tableOID) == null ) {
                 throw new Exception("Can't find table oid: " + tableOID);
@@ -144,6 +154,7 @@ public class Catalog {
     }
 
     public boolean createIndex(int tableOID, String column){
+        DEBUGGER.info("Creating index for "+ tables.get(tableOID).getName()+ " table on column "+ column);
 
         if( !tables.containsKey(tableOID) )
             //table OID is invalid
@@ -155,10 +166,13 @@ public class Catalog {
                 targetColumn = c;
             }
         }
+        DEBUGGER.info("Finding column schema");
 
         if(targetColumn == null)
             return false;
+        DEBUGGER.info("Creating empty B+ index tree");
         BPlusTree tree = getBPlusTree(targetColumn);
+        DEBUGGER.info("Registering index tree in catalog");
         Map<Column, BPlusTree> indexMap;
 
         if(indices.containsKey(tableOID)){
@@ -168,6 +182,9 @@ public class Catalog {
         }
 
         indexMap.put(targetColumn, tree);
+        DEBUGGER.info("Populating index tree");
+        //timer.sleep
+
         return true;
     }
 

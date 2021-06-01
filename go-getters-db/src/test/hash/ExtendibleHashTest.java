@@ -1,4 +1,4 @@
-package test.hash;
+package test.storage.hash;
 import main.hash.ExtendibleHash;
 
 import static org.junit.jupiter.api.Assertions.*;

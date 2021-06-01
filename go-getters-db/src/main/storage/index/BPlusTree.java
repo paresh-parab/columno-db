@@ -54,9 +54,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
             result.remove(result.size()-1);
         boolean ret = tar.lookup(key, result.get(0), comparator );
         //step 3. unPin buffer pool
-        /////freePagesInTransaction(false,tar.getPageID());
         buffer_pool_manager.unpinPage(tar.getPageID(), false);
-        //assert(buffer_pool_manager_->CheckAllUnpined());
         return ret;
     }
 
@@ -70,7 +68,6 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         }
         tryUnlockRootPageID(true);
         boolean res = insertIntoLeaf(key,value);
-        //assert(Check());
         return res;
     }
 
@@ -115,8 +112,6 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         BPlusTreeLeafPage leafPage = findLeafPage(key,false, OpType.INSERT);
         boolean exist = leafPage.lookup(key,value,comparator);
         if (exist) {
-            //buffer_pool_manager_->UnpinPage(leafPage->GetPageId(), false);
-            /////freePagesInTransaction(true,transaction);
             return false;
         }
         leafPage.insert(key,value,comparator);
@@ -124,8 +119,6 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
             BPlusTreeLeafPage newLeafPage = split(leafPage);//unpin it in below func
             insertIntoParent(leafPage, (KeyType) newLeafPage.keyAt(0),newLeafPage);
         }
-        //buffer_pool_manager_->UnpinPage(leafPage->GetPageId(), true);
-        /////freePagesInTransaction(true,transaction);
         return true;
     }
 
@@ -141,13 +134,11 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         //step 1 ask for new page from buffer pool manager
         int newPageID = 0;
         IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(PageType.INDEX);
-        //assert(newPage != nullptr);
         newPage.wLatch();
         //step 2 move half of key & value pairs from input page to newly created page
         BPlusTreeLeafPage newNode = new BPlusTreeLeafPage(newPage);
         newNode.init(newPageID, node.getParentPageID());
         node.moveHalfTo(newNode, buffer_pool_manager);
-        //fetch page and new page need to unpin page(do it outside)
         return newNode;
     }
 
@@ -155,13 +146,11 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         //step 1 ask for new page from buffer pool manager
         int newPageID = 0;
         IndexPage<KeyType, ValueType> newPage = (IndexPage<KeyType, ValueType>) buffer_pool_manager.newPage(PageType.INDEX);
-        //assert(newPage != nullptr);
         newPage.wLatch();
         //step 2 move half of key & value pairs from input page to newly created page
         BPlusTreeInternalPage newNode = new BPlusTreeInternalPage(newPage);
         newNode.init(newPageID, node.getParentPageID());
         node.moveHalfTo(newNode, buffer_pool_manager);
-        //fetch page and new page need to unpin page(do it outside)
         return newNode;
     }
 
@@ -188,8 +177,6 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
                 oldNode.setParentPageID(rootPageID);
                 newNode.setParentPageID(rootPageID);
                 updateRootPageID();
-                //fetch page and new page need to unpin page
-                //buffer_pool_manager_->UnpinPage(new_node->GetPageId(),true);
                 buffer_pool_manager.unpinPage(newRoot.getPageID(),true);
                 return;
             }
@@ -199,11 +186,8 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
                 throw new Exception("Unable to create new Page");
             BPlusTreeInternalPage parent = new BPlusTreeInternalPage(page);
             newNode.setParentPageID(parentID);
-            //buffer_pool_manager_->UnpinPage(new_node->GetPageId(),true);
-            //insert new node after old node
             parent.insertNodeAfter(oldNode.getPageID(), key, newNode.getPageID());
             if (parent.getSize() > parent.getMaxSize()) {
-                //begin /* Split Parent */
                 BPlusTreeInternalPage newLeafPage = split(parent);//new page need unpin
                 insertIntoParent(parent, (KeyType) newLeafPage.keyAt(0),newLeafPage);
             }
@@ -236,8 +220,6 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         if (curSize < delTar.getMinSize()) {
             coalesceOrRedistribute(delTar);
         }
-        /////freePagesInTransaction(true,transaction);
-        //assert(Check());
     }
 
     /*
@@ -249,7 +231,6 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
      */
 
     private <N extends BPlusTreePage> boolean coalesceOrRedistribute(N node) {
-        //if (N is the root and N has only one remaining child)
         if (node.isRootPage()) {
             boolean delOldRoot = adjustRoot(node);//make the child of N the new root of the tree and delete N
             return delOldRoot;
@@ -372,7 +353,6 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
                 updateRootPageID();
                 // set the new root's parent id "INVALID_PAGE_ID"
                 IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(newRootId);
-                //assert(page != nullptr);
                 BPlusTreeInternalPage newRoot = new BPlusTreeInternalPage(page);
                 newRoot.setParentPageID(INVALID_PAGE_ID);
                 buffer_pool_manager.unpinPage(newRootId, true);
@@ -484,10 +464,8 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     private void updateRootPageID(boolean insertRecord) {
         HeaderPage header_page = (HeaderPage) buffer_pool_manager.fetchPage(HEADER_PAGE_ID);
         if (insertRecord)
-            // create a new record<index_name + root_page_id> in header_page
             header_page.insertRecord(index_name, rootPageID);
         else
-            // update root_page_id in header_page
             header_page.updateRecord(index_name, rootPageID);
         buffer_pool_manager.unpinPage(HEADER_PAGE_ID, true);
     }

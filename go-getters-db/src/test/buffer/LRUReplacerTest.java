@@ -1,4 +1,4 @@
-package test.buffer;
+package test.storage.buffer;
 
 import main.buffer.LRUReplacer;
 
