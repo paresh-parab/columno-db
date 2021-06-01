@@ -21,6 +21,12 @@ public class BufferPoolManagerTest
     @org.junit.jupiter.api.Test
     void BufferPoolManagerTest1()
     {
+        DiskManager diskManager = new DiskManager("BufferPoolDBTest1.db");
+
+        BufferPoolManager bufferPoolManager = new
+                BufferPoolManager(10, diskManager);
+
+        Page pageZero = bufferPoolManager.newPage(PageType.TABLE);
 
         List<Column> cols = new ArrayList<>(){{
             add(new Column("ID", TypeID.INTEGER_TYPE ));
@@ -62,12 +68,7 @@ public class BufferPoolManagerTest
 
         System.out.println(tp.toString());
 
-        DiskManager diskManager = new DiskManager("BufferPoolDBTest1.db");
-
-        BufferPoolManager bufferPoolManager = new
-                BufferPoolManager(10, diskManager);
-
-        Page pageZero = bufferPoolManager.newPage(PageType.TABLE);
+        pageZero = tp;
 
         assertNotNull(pageZero);
 
@@ -93,12 +94,11 @@ public class BufferPoolManagerTest
 
         // fetch page one again
         Page pageRead = new TablePage();
-        String page = diskManager.readPage(0);
         pageRead.initializePageFromString(diskManager.readPage(0));
         pageZero = bufferPoolManager.fetchPage(0);
 
         // check read content
-        assertEquals(pageRead.toString(), pageZero.toString());
+        assertEquals(pageRead.getPageID(), pageZero.getPageID());
 
         diskManager.shutDown();
     }
@@ -108,11 +108,11 @@ public class BufferPoolManagerTest
     {
 //        int tempPageID = 0;
 //
-//        DiskManager<Page<String>> diskManager = new DiskManager<>("BufferPoolDBTest2");
+//        DiskManager diskManager = new DiskManager("BufferPoolDBTest2");
 //
-//        BufferPoolManager<String> bufferPoolManager = new BufferPoolManager<>(10, diskManager);
+//        BufferPoolManager bufferPoolManager = new BufferPoolManager(10, diskManager);
 //
-//        Page<String> pageZero = bufferPoolManager.newPage(tempPageID);
+//        Page pageZero = bufferPoolManager.newPage(PageType.TABLE);
 //
 //        assertNotNull(pageZero);
 //        assertEquals(0, tempPageID);

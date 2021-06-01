@@ -7,20 +7,28 @@ import main.execution.executors.SeqReadExecutor;
 import main.execution.plans.*;
 
 public class ExecutorFactory {
-    public static AbstractExecutor createExecutor(ExecutorContext execCtx, AbstractPlanNode plan) {
+    public static AbstractExecutor createExecutor(ExecutorContext execCtx, AbstractPlanNode plan, int mode) {
         switch (plan.getType()) {
             // Create a new sequential scan executor.
             case SeqScan:{
-                SeqReadPlanNode readPlan = (SeqReadPlanNode) plan;
-                return new SeqReadExecutor(execCtx, readPlan);
+                if(mode == 0) {
+                    SeqReadPlanNode readPlan = (SeqReadPlanNode) plan;
+                    return new SeqReadExecutor(execCtx, readPlan);
+                }
             }
 
             // Create a new insert executor.
             case Insert: {
-                InsertPlanNode insertPlan = (InsertPlanNode) plan;
-                AbstractExecutor child_executor =
-                        insertPlan.isRawInsert() ? null : createExecutor(execCtx, insertPlan.getChildPlan());
-                return new InsertExecutor(execCtx, insertPlan, child_executor);
+                if (mode == 0) {
+                    InsertPlanNode insertPlan = (InsertPlanNode) plan;
+                    AbstractExecutor child_executor =
+                            insertPlan.isRawInsert() ? null : createExecutor(execCtx, insertPlan.getChildPlan(), 0);
+                    return new InsertExecutor(execCtx, insertPlan, child_executor);
+                }
+                else{
+                    InsertPlanNode insertPlan = (InsertPlanNode) plan;
+                    return new InsertExecutor(execCtx, insertPlan);
+                }
             }
 
 //            // Create a new hash join executor.
@@ -35,7 +43,7 @@ public class ExecutorFactory {
             // Create a new aggregation executor.
             case Aggregation: {
                 AggregationPlanNode aggPlan = (AggregationPlanNode)plan ;
-                AbstractExecutor child_executor = createExecutor(execCtx, aggPlan.getChildPlan());
+                AbstractExecutor child_executor = createExecutor(execCtx, aggPlan.getChildPlan(), 0);
                 return new AggregationExecutor(execCtx, aggPlan, child_executor);
             }
 

@@ -20,7 +20,7 @@ public class insertClass {
     public insertClass() {
     }
 
-    List<Column> cols1 = new ArrayList<Column>(){{
+    List<Column> cols1 = new ArrayList<>(){{
         add(new Column("ID", TypeID.INTEGER_TYPE ));
         add(new Column("Name", TypeID.STRING_TYPE ));
         add(new Column("Subscribed", TypeID.BOOLEAN_TYPE ));
@@ -28,7 +28,7 @@ public class insertClass {
     Schema s1 = new Schema(cols1);
     String table1 = "SubscriptionRecord";
 
-    List<Column> cols2 = new ArrayList<Column>(){{
+    List<Column> cols2 = new ArrayList<>(){{
         add(new Column("Name", TypeID.INTEGER_TYPE ));
         add(new Column("Age", TypeID.STRING_TYPE ));
         add(new Column("PhoneNo", TypeID.STRING_TYPE ));
@@ -47,19 +47,19 @@ public class insertClass {
     ExecutorContext context = new ExecutorContext(catalog, bufferPoolManager);
 
     ArrayList<List<Value>> values = new ArrayList<>();
-    List<Value> tempList = new ArrayList<Value>(){{
+    List<Value> tempList = new ArrayList<>(){{
         add(new Value(1));
         add(new Value("ABC"));
         add(new Value(true));
     }};
 
-    List<Value> tempListTwo = new ArrayList<Value>(){{
+    List<Value> tempListTwo = new ArrayList<>(){{
         add(new Value(2));
         add(new Value("BCD"));
         add(new Value(true));
     }};
 
-    List<Value> tempListThree = new ArrayList<Value>(){{
+    List<Value> tempListThree = new ArrayList<>(){{
         add(new Value(3));
         add(new Value("CDE"));
         add(new Value(true));
@@ -67,7 +67,7 @@ public class insertClass {
 
     InsertPlanNode pn = new InsertPlanNode(values, catalog.getTable(table1).getOid());
 
-    InsertExecutor ex = (InsertExecutor) ExecutorFactory.createExecutor(context, pn);
+    InsertExecutor ex = (InsertExecutor) ExecutorFactory.createExecutor(context, pn, 0);
 
 
 }
