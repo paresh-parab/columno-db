@@ -2,6 +2,7 @@ package main.execution.executors;
 
 import main.catalog.Column;
 import main.catalog.Schema;
+import main.demo.Formatter;
 import main.execution.expressions.AggregateValueExpression;
 import main.execution.ExecutorContext;
 import main.execution.expressions.AbstractExpression;
@@ -211,6 +212,51 @@ public class AggregationExecutor extends AbstractExecutor {
         return false;
     }
 
+    public void computeAggregate(List<List<Value>> values, int groupByCol, Schema outputSchema, int CountAggregateVal)
+    {
+        Value countScheme = new Value(CountAggregateVal);
+        List<String> groupByNames = Arrays.asList("female", "male");
+        List<Integer> fieldValues = new ArrayList<>();
+
+        for(int i =0 ; i < outputSchema.getColumns().size(); i++) {
+            fieldValues.add(0);
+        }
+
+        for(int i = 0; i < values.size(); i++)
+        {
+            for(int j = 0; j < groupByNames.size(); j++)
+            {
+                if(values.get(i).get(groupByCol).getAsString().toLowerCase().
+                        equals(groupByNames.get(j).toLowerCase()) &&
+                        values.get(i).get(groupByCol + 1).compareLessThan(countScheme))
+                {
+                    int current = fieldValues.get(j);
+                    current++;
+                    fieldValues.set(j, current);
+                }
+            }
+        }
+
+        List<List<Value>> outputValues = new ArrayList<>();
+
+        for(int i = 0; i < groupByNames.size(); i++)
+        {
+            int finalField1Count = fieldValues.get(i);
+            int finalI = i;
+            outputValues.add(new ArrayList<>() {{
+                add(new Value(groupByNames.get(finalI).toUpperCase()));
+                add(new Value(finalField1Count+outputSchema.getColumnCount()));
+            }});
+        }
+
+        List<Tuple> rows = new ArrayList<>();
+        int size = outputValues.size();
+
+        for(int i = 0; i < size; i++){ rows.add(new Tuple(outputValues.get(i))); }
+
+        Formatter.prettyPrintTable(rows, outputSchema);
+
+    }
     /**
      * @return the tuple as an AggregateKey
      */

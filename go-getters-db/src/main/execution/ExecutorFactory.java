@@ -19,6 +19,13 @@ public class ExecutorFactory {
                     DEBUGGER.info("Creating Sequential Read Executor");
                     return new SeqReadExecutor(execCtx, readPlan);
                 }
+                else if(mode == 1){
+                    SeqReadPlanNode readPlan = (SeqReadPlanNode) plan;
+                    DEBUGGER.info("Creating Sequential Read Executor");
+                    return new SeqReadExecutor(execCtx, readPlan);
+                }
+                else {
+                }
             }
 
             // Create a new insert executor.
@@ -29,6 +36,14 @@ public class ExecutorFactory {
                             insertPlan.isRawInsert() ? null : createExecutor(execCtx, insertPlan.getChildPlan(), 0);
                     DEBUGGER.info("Creating Insertion Executor");
                     return new InsertExecutor(execCtx, insertPlan, child_executor);
+                }
+                else if(mode == 1){
+                    InsertPlanNode insertPlan = (InsertPlanNode) plan;
+                    DEBUGGER.info("Creating Insertion Executor");
+                    return new InsertExecutor(execCtx, insertPlan);
+                }
+                else{
+
                 }
             }
 
@@ -41,6 +56,16 @@ public class ExecutorFactory {
                     AbstractExecutor child_executor = createExecutor(execCtx, aggPlan.getChildPlan(), 0);
                     DEBUGGER.info("Creating Aggregate Read Executor");
                     return new AggregationExecutor(execCtx, aggPlan, child_executor);
+                }
+                else if(mode == 1)
+                {
+                    AggregationPlanNode aggPlan = (AggregationPlanNode) plan;
+                    DEBUGGER.info("Creating Child Executor for Aggregation");
+                    DEBUGGER.info("Creating Aggregate Read Executor");
+                    return new AggregationExecutor(execCtx, aggPlan, null);
+                }
+                else{
+
                 }
             }
             default: {

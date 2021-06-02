@@ -94,4 +94,19 @@ public class InsertExecutor extends AbstractExecutor {
                 }
                 return null;
         }
+
+        public boolean insertColVals(List<List<Value>> values, Catalog catalog, String tableName)
+        {
+                DEBUGGER.info("Invoking Insertion Executor");
+
+                Tuple tuple = null;
+
+                int numberOfTups = values.size();
+                for (int idx = 0; idx < numberOfTups; idx++) {
+                        tuple = new Tuple(values.get(idx));
+                        DEBUGGER.info("Inserted following tuple into table :");
+                        Formatter.prettyPrintTuple(tuple);
+                }
+                return true;
+        }
 }

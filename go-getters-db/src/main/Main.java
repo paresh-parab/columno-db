@@ -1,6 +1,8 @@
 package main;
 
 
+import main.demo.AutoModeDemo;
+import main.demo.ColumnStoreDemo;
 import main.demo.RowStoreDemo;
 
 import java.util.Scanner;
@@ -20,8 +22,10 @@ public class Main {
                     new RowStoreDemo().demo();
                     break;
                 case 2:
+                    new ColumnStoreDemo();
                     break;
                 case 3:
+                    new AutoModeDemo().demo();
                     break;
                 default: break;
             }
