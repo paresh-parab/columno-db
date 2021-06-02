@@ -67,7 +67,7 @@ public class RowStoreDemo {
         }};
         s = new Schema(cols);
         table = "USER_DETAILS";
-        diskManager = new DiskManager("BufferPoolDBTest1.db");
+        diskManager = new DiskManager("RowDemo.db");
         bufferPoolManager = new BufferPoolManager(10, diskManager);
         catalog = new Catalog(bufferPoolManager);
 
@@ -127,7 +127,7 @@ public class RowStoreDemo {
         context = new ExecutorContext(catalog, bufferPoolManager);
         catalog.createTable(table, s);
         ipn = new InsertPlanNode(values, catalog.getTable(table).getOid());
-        ex = (InsertExecutor) ExecutorFactory.createExecutor(context, ipn);
+        ex = (InsertExecutor) ExecutorFactory.createExecutor(context, ipn, 0);
         ex.init();
         ex.next(new Tuple[0]);
 
@@ -163,7 +163,7 @@ public class RowStoreDemo {
 
 
     public void demo(){
-        AggregationExecutor aex = (AggregationExecutor) ExecutorFactory.createExecutor(context, apn);
+        AggregationExecutor aex = (AggregationExecutor) ExecutorFactory.createExecutor(context, apn, 0);
         DEBUGGER.info("Running following query: SELECT GENDER, COUNT(*) FROM USERS WHERE USERS.AGE < 25 GROUP BY GENDER ");
         aex.init();
         List<Tuple> rows = new ArrayList<>();

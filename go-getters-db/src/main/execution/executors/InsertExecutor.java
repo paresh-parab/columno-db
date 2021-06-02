@@ -1,16 +1,21 @@
 package main.execution.executors;
 
+import main.buffer.BufferPoolManager;
 import main.catalog.Catalog;
 import main.catalog.Schema;
-import main.demo.Formatter;
 import main.execution.ExecutorContext;
 import main.execution.plans.InsertPlanNode;
+import main.storage.page.Page;
+import main.storage.page.TablePage;
 import main.storage.table.TableHeap;
 import main.storage.table.Tuple;
-
-import java.util.concurrent.ForkJoinPool;
-
+import main.type.PageType;
+import main.type.Value;
+import static java.lang.System.exit;
 import static main.common.Constants.DEBUGGER;
+import main.demo.Formatter;
+
+import java.util.List;
 
 public class InsertExecutor extends AbstractExecutor {
 
@@ -18,18 +23,13 @@ public class InsertExecutor extends AbstractExecutor {
         private TableHeap table;
         private AbstractExecutor childExe;
 
-        /**
-         * Creates a new insert executor.
-         *
-         * @param exec_ctx       the executor context
-         * @param plan           the insert plan to be executed
-         * @param child_executor the child executor to obtain insert values from, can be nullptr
-         */
         public InsertExecutor(ExecutorContext execCtx, InsertPlanNode plan, AbstractExecutor childExe){
                 super(execCtx);
                 this.plan = plan;
                 this.childExe = childExe;
         }
+
+        public InsertExecutor(ExecutorContext executorContext, InsertPlanNode plan){}
 
         @Override
         public void init() {
@@ -75,4 +75,23 @@ public class InsertExecutor extends AbstractExecutor {
                 return catalog.getTable(this.plan.getTableOID()).getSchema();
         }
 
+        public TablePage insertColStore(List<List<Value>> values, Catalog catalog, String tableName)
+        {
+                try
+                {
+                        int colStart = catalog.getNames().get(tableName);
+                        TablePage tp = new TablePage();
+                        tp.tableName = tableName;
+                        for (List<Value> value : values) {
+                                tp.colData.put(catalog.colHeap.get(colStart++), value);
+                        }
+
+                        return tp;
+                } catch (Exception e) {
+                        System.out.println("Exception: Error in inserting values in columnar style");
+                        e.printStackTrace();
+                        exit(1);
+                }
+                return null;
+        }
 }

@@ -11,6 +11,8 @@ public abstract class AbstractPlanNode {
     /** The children of this plan node. */
     private List<AbstractPlanNode> children;
 
+    public AbstractPlanNode(){}
+
     public AbstractPlanNode(Schema output_schema, List<AbstractPlanNode> children){
         this.outputSchema = output_schema;
         this.children = new ArrayList<>(children);
