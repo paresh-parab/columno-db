@@ -3,10 +3,6 @@ package main.execution.queryExecutor;
 import main.execution.queryCatalog.Schema;
 
 public abstract class executorAbs {
-
-    public executorAbs() {
-    }
-
     private ExContext exeContext;
 
     public executorAbs(ExContext exeContext) {

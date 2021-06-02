@@ -197,16 +197,16 @@ public class AggregationExecutor extends AbstractExecutor {
     public void init() {
         DEBUGGER.info("Initiating Aggregation Executor");
         this.child.init();
+        DEBUGGER.info("Evaluating child plan");
+        DEBUGGER.info("Forming Key-Value pair from child plan result and storing it in Hash Table");
+
         Tuple[] tuple = new Tuple[1];
         while (this.child.next(tuple)) {
-            DEBUGGER.info("Evaluating child plan");
             AggregateKey key = this.makeKey(tuple[0]);
             AggregateValue value = this.makeVal(tuple[0]);
             this.aht.insertCombine(key, value);
-            DEBUGGER.info("Forming Key-Value pair from child plan result and storing it in Hash Table");
         }
         this.ahtIterator = this.aht.begin();
-        DEBUGGER.info("Succesfully initiated Aggregation Executor");
     }
 
     @Override
@@ -214,7 +214,6 @@ public class AggregationExecutor extends AbstractExecutor {
         DEBUGGER.info("Invoking Aggregation Executor");
 
         while (this.ahtIterator.hasNext()) {
-            DEBUGGER.info("Reading Key-Value pair from Hash Table of Executor");
 
             Map.Entry<AggregateKey, AggregateValue> entry = (Map.Entry<AggregateKey, AggregateValue>) this.ahtIterator.next();
             AggregateKey key = entry.getKey();
@@ -223,9 +222,7 @@ public class AggregationExecutor extends AbstractExecutor {
             (this.plan.getHaving().evaluateAggregate(key.groupBys, val.aggregates).getAsBoolean())) {
                 List<Value> result = new ArrayList<>();
                 for ( Column column : this.getOutputSchema().getColumns() ) {
-                    DEBUGGER.info("Applying Aggregates and/or group bys on the current Key-Value pair");
                     result.add(column.getExpr().evaluateAggregate(key.groupBys, val.aggregates));
-                    DEBUGGER.info("Formatting result as per output schema");
 
                 }
                 DEBUGGER.info("Returning result of Aggregation Executor");

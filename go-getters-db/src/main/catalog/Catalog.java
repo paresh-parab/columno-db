@@ -67,8 +67,6 @@ public class Catalog {
     private Map<String, Integer> names = new HashMap<>();
     /** The next table identifier to be used. */
     private int nextTableOID = 0;
-    /** The colHeap to keep track of columns */
-    public Map<Integer, String> colHeap = new HashMap<>();
 
 
     /** indices: storing table id against column and index root page ID map entries */
@@ -79,8 +77,15 @@ public class Catalog {
         this.bpm = bpm;
     }
 
+    /**
+     * Create a new table and return its metadata.
+     * @param txn the transaction in which the table is being created
+     * @param table_name the name of the new table
+     * @param schema the schema of the new table
+     * @return a pointer to the metadata of the new table
+     */
     public TableMetadata createTable(String tableName, Schema schema) {
-        DEBUGGER.info("Registering new table "+ tableName +" in catalog");
+
         try{
             DEBUGGER.info("Checking if table with same name already exists in catalog");
             if(names.get(tableName) != null)
@@ -101,24 +106,6 @@ public class Catalog {
         }
         return null;
     }
-
-    public void createTableCol(String tableName, Schema schema)
-    {
-        try
-        {
-            names.put(tableName, ++nextTableOID);
-            for(Column col: schema.getColumns()) {
-                colHeap.put(nextTableOID++, col.getName());
-            }
-        }
-        catch (Exception e)
-        {
-            System.out.println("Program terminated due to exception: " + e.getMessage());
-            System.out.println(e.getStackTrace());
-            System.exit(0);
-        }
-    }
-
 
     /** @return table metadata by name */
     public TableMetadata getTable(String tableName) {

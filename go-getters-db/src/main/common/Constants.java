@@ -1,10 +1,12 @@
 package main.common;
 
+import java.awt.*;
+
 public class Constants
 {
     public static class Debug{
         public void info(String msg){
-            System.out.println(msg);
+            System.out.println( "\u001B[32m" + msg+ "\u001B[0m");
         }
     }
     // representing an invalid page id

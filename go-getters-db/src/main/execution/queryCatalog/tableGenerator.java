@@ -11,9 +11,6 @@ public class tableGenerator {
     Map<String,String> nameToTypeId = new HashMap<>();
     Map<String,Integer> nameToDifference = new HashMap<>();
 
-    public tableGenerator() {
-    }
-
     public tableGenerator(String name, String typeId, Integer minValue, Integer maxValue) {
         this.name = name;
         this.typeId = typeId;

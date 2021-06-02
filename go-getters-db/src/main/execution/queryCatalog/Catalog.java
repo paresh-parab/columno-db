@@ -7,10 +7,6 @@ public class Catalog {
         Map<String,Integer> namesToIdentifier = new HashMap<>();
         Map<Integer, TableMetadata> TableIdentifierToMetadata = new HashMap<>();
         Integer next_table_oid_= 0;
-
-        public Catalog() {
-        }
-
         public String createTable(Transaction txn, String tableName, Schema schema){
                 Integer table_oid = next_table_oid_;
                 next_table_oid_++;

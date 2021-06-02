@@ -16,13 +16,13 @@ public class AggregationPlanNode extends AbstractPlanNode {
     private List<AggregationType> aggTypes;
 
     public AggregationPlanNode(Schema outputSchema, AbstractPlanNode child, AbstractExpression having,
-                               List<AbstractExpression> group_bys,
+                               List<AbstractExpression> groupBys,
                                List<AbstractExpression> aggregates, List<AggregationType> agg_types){
         super(outputSchema, new ArrayList<AbstractPlanNode>(){{
             add(child);
         }});
         this.having = having;
-        this.groupBys = group_bys;
+        this.groupBys = new ArrayList<>(groupBys);;
         this.aggregates = new ArrayList<>(aggregates);
         this.aggTypes = new ArrayList<>(agg_types);
         DEBUGGER.info("Initiated Aggregation Plan with group bys and aggregation types");

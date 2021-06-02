@@ -31,7 +31,6 @@ public class SeqReadExecutor extends AbstractExecutor{
         Catalog catalog = getExecutorContext().getCatalog();
         this.table = catalog.getTable(this.plan.getTableOID()).getTable();
 
-        DEBUGGER.info("Succesfully initialized Sequential Read Executor");
 
     }
 
@@ -50,11 +49,9 @@ public class SeqReadExecutor extends AbstractExecutor{
             if (eval) {
                 tuple[0] = new Tuple(t);
                 DEBUGGER.info("Following tuple satisfies the predicate "+ tuple[0].toString());
-                DEBUGGER.info("Returning this tuple from Sequential Read Executor");
                 return true;
             }
         }
-        DEBUGGER.info("Exiting Sequential Read Executor");
         return false;
     }
 

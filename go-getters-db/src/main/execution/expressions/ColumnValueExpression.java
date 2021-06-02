@@ -12,7 +12,7 @@ public class ColumnValueExpression extends AbstractExpression{
     private int tupleIdx;
     private int colIdx;
 
-    public ColumnValueExpression(int tuple_idx, int col_idx, TypeID retType) {
+    public ColumnValueExpression(int tupleIdx, int colIdx, TypeID retType) {
         super(new ArrayList<>(), retType);
         this.tupleIdx = tupleIdx;
         this.colIdx = colIdx;

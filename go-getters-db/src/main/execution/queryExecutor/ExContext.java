@@ -9,9 +9,6 @@ public class ExContext {
     Transaction transaction;
     RID rid;
 
-    public ExContext() {
-    }
-
     public ExContext(Catalog catalog, Transaction transaction, RID rid) {
         this.catalog = catalog;
         this.transaction = transaction;
