@@ -7,6 +7,8 @@ import main.storage.table.Tuple;
 public abstract class AbstractExecutor {
     private ExecutorContext exeContext;
 
+    public AbstractExecutor(){}
+
     public AbstractExecutor(ExecutorContext exeContext) {
         this.exeContext = exeContext;
     }

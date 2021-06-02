@@ -23,12 +23,6 @@ public class AggregationExecutor extends AbstractExecutor {
             this.groupBys = new ArrayList<>(groupBys);
         }
 
-        /**
-         * Compares two aggregate keys for equality.
-         *
-         * @param other the other aggregate key to be compared with
-         * @return true if both aggregate keys have equivalent group-by expressions, false otherwise
-         */
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
@@ -69,9 +63,6 @@ public class AggregationExecutor extends AbstractExecutor {
         }
     }
 
-    /**
-     * A simplified hash table that has all the necessary functionality for aggregations.
-     */
     class SimpleAggregationHashTable {
 
         private List<AbstractExpression> aggExprs;
@@ -88,9 +79,6 @@ public class AggregationExecutor extends AbstractExecutor {
             this.aggTypes = aggTypes;
         }
 
-        /**
-         * @return the initial aggregrate value for this aggregation executor
-         */
         public AggregateValue generateInitialAggregateValue() {
             List<Value> values = new ArrayList<>();
             for (AggregationType aggType : aggTypes) {
@@ -112,9 +100,6 @@ public class AggregationExecutor extends AbstractExecutor {
             return new AggregateValue(values);
         }
 
-        /**
-         * Combines the input into the aggregation result.
-         */
         public void combineAggregateValues(AggregateValue result, AggregateValue input) {
             for (int i = 0; i < aggExprs.size(); i++) {
                 switch (aggTypes.get(i)) {
@@ -134,10 +119,6 @@ public class AggregationExecutor extends AbstractExecutor {
             }
         }
 
-        /**
-         * Inserts a value into the hash table and then combines it with the current aggregation.
-         *
-         */
         public void insertCombine(AggregateKey aggKey, AggregateValue aggVal) {
             if (ht.get(aggKey) == null) {
                 ht.put(aggKey, generateInitialAggregateValue());
@@ -145,9 +126,6 @@ public class AggregationExecutor extends AbstractExecutor {
             combineAggregateValues(ht.get(aggKey), aggVal);
         }
 
-        /**
-         * @return iterator to the start of the hash table
-         */
         Iterator begin() {
             return ht.entrySet().iterator();
         }

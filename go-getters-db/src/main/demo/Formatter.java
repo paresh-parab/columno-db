@@ -5,6 +5,7 @@ import main.storage.table.Tuple;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Formatter {
 
@@ -30,10 +31,10 @@ public class Formatter {
 
     public static void prettyPrintTable(List<Tuple> rows, Schema s){
         printHorizontalLine();
-        printColumns(s.getColumns().stream().map(a->a.getName()).toList());
+        printColumns(s.getColumns().stream().map(a->a.getName()).collect(Collectors.toList()));
         printHorizontalLine();
         for(Tuple t: rows){
-            printColumns(t.getContent().stream().map(a -> a.toString()).toList());
+            printColumns(t.getContent().stream().map(a -> a.toString()).collect(Collectors.toList()));
             printHorizontalLine();
         }
 
@@ -41,7 +42,7 @@ public class Formatter {
 
     public static void prettyPrintTuple(Tuple t){
         printHorizontalLine();
-        printColumns(t.getContent().stream().map(a -> a.toString()).toList());
+        printColumns(t.getContent().stream().map(a -> a.toString()).collect(Collectors.toList()));
         printHorizontalLine();
     }
 }

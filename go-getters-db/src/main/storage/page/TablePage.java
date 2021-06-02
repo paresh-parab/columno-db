@@ -6,13 +6,18 @@ import main.type.TypeID;
 import main.type.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static main.common.Constants.*;
 
-public class TablePage extends Page{
+public class TablePage extends Page
+{
     private List<Tuple> data;
     private Schema schema;
+    public Map<String, List<Value>> colData = new HashMap<>();
+    public String tableName;
 
     public Schema getSchema() {
         return schema;
@@ -80,7 +85,5 @@ public class TablePage extends Page{
             data.add(new Tuple(values));
 
         }
-
-        return;
     }
 }

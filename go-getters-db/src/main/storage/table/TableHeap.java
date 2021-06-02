@@ -92,6 +92,7 @@ public class TableHeap {
     }
 
     public List getColumnValues(int colIdx, TypeID type) {
+
         List result = null;
 
         if(type == TypeID.STRING_TYPE){
