@@ -40,16 +40,13 @@ public class TableHeap {
     }
 
     public boolean insertTuple(Tuple tuple) {
-        DEBUGGER.info("Reading in first page of the table");
         TablePage currentPage = (TablePage) bpm.fetchPage(firstPageID);
         if (currentPage == null) {
-            DEBUGGER.info("No page created for this table");
             //Page doesnt exist
             return false;
         }
 
         currentPage.wLatch();
-        DEBUGGER.info("Locking the page");
 
         // Insert into the first page with enough space. If no such page exists, create a new page and insert into that.
         // INVARIANT: cur_page is WLatched if you leave the loop normally.
@@ -61,13 +58,11 @@ public class TableHeap {
             if (nextPageID != INVALID_PAGE_ID) {
                 // Unlatch and unpin the current page.
                 currentPage.wUnlatch();
-                DEBUGGER.info("Unlocking previously read page");
                 bpm.unpinPage(currentPage.getPageID(), false);
                 // And repeat the process with the next page.
                 currentPage = (TablePage) bpm.fetchPage(nextPageID);
                 DEBUGGER.info("Reading in next page of table");
                 currentPage.wLatch();
-                DEBUGGER.info("Locking current page");
             } else {
                 DEBUGGER.info("We ran out of pages; Creating empty new page");
                 // Otherwise we have run out of valid pages. We need to create a new page.
@@ -91,14 +86,12 @@ public class TableHeap {
         // This line has caused most of us to double-take and "whoa double unlatch".
         // We are not, in fact, double unlatching. See the invariant above.
         currentPage.wUnlatch();
-        DEBUGGER.info("Unlocking previously read page");
         bpm.unpinPage(currentPage.getPageID(), true);
         // Update the transaction's write set.
         return true;
     }
 
     public List getColumnValues(int colIdx, TypeID type) {
-        DEBUGGER.info("Entered method to fetch data for building index");
         List result = null;
 
         if(type == TypeID.STRING_TYPE){
@@ -117,7 +110,6 @@ public class TableHeap {
             }
             nextPageID = currentPage.getNextPageID();
             currentPage.wLatch();
-            DEBUGGER.info("Locking current page");
 
             int currentPageID = currentPage.getPageID();
             List<Tuple> currentTuples = currentPage.getData();
@@ -138,16 +130,13 @@ public class TableHeap {
             }
 
             currentPage.wUnlatch();
-            DEBUGGER.info("Unlocking current page");
 
         }while( nextPageID != INVALID_PAGE_ID);
-        DEBUGGER.info("Exiting method to fetch data for building index......");
         return result;
     }
 
     public List readAllRows() {
 
-        DEBUGGER.info("Entered method to read all rows of table");
         List result = new ArrayList<Tuple>();
         int nextPageID = firstPageID;
 
@@ -160,7 +149,6 @@ public class TableHeap {
             }
             nextPageID = currentPage.getNextPageID();
             currentPage.wLatch();
-            DEBUGGER.info("Locking current page");
 
             int currentPageID = currentPage.getPageID();
             List<Tuple> currentTuples = currentPage.getData();
@@ -168,10 +156,8 @@ public class TableHeap {
 
             result.addAll(new ArrayList(currentTuples));
             currentPage.wUnlatch();
-            DEBUGGER.info("Unlocking current page");
 
         }while( nextPageID != INVALID_PAGE_ID);
-        DEBUGGER.info("Exiting method to read all rows of table.....");
         return result;
     }
 

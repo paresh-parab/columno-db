@@ -110,8 +110,6 @@ public class ExecuorAgg {
 
     private Iterator ahtIterator;
 
-    public ExecuorAgg() {
-    }
 
     public ExecuorAgg(ExecutorContext execCtx, AggregationPlanNode plan, AbstractExecutor child) {
         this.plan = plan;
