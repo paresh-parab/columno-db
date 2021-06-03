@@ -28,32 +28,32 @@ public class AggregationPlanNode extends AbstractPlanNode {
         DEBUGGER.info("Initiated Aggregation Plan with group bys and aggregation types");
     }
 
-    /** @return the having clause */
+
     public AbstractExpression getHaving() {
         return having;
     }
 
-    /** @return the idx'th group by expression */
+
     public AbstractExpression getGroupByAt(int idx)  {
         return groupBys.get(idx);
     }
 
-    /** @return the group by expressions */
+
     public List<AbstractExpression> getGroupBys() {
         return groupBys;
     }
 
-    /** @return the idx'th aggregate expression */
+
     public AbstractExpression getAggregateAt(int idx) {
         return aggregates.get(idx);
     }
 
-    /** @return the aggregate expressions */
+
     public List<AbstractExpression> getAggregates() {
         return aggregates;
     }
 
-    /** @return the aggregate types */
+
     public List<AggregationType> getAggregateTypes() {
         return aggTypes;
     }

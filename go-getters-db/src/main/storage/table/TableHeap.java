@@ -48,15 +48,11 @@ public class TableHeap {
 
         currentPage.wLatch();
 
-        // Insert into the first page with enough space. If no such page exists, create a new page and insert into that.
-        // INVARIANT: cur_page is WLatched if you leave the loop normally.
         DEBUGGER.info("Attempting to insert into current page of Table");
         while (!insertTupleIntoPage(currentPage, tuple)) {
 
             int nextPageID = currentPage.getNextPageID();
-            // If the next page is a valid page,
             if (nextPageID != INVALID_PAGE_ID) {
-                // Unlatch and unpin the current page.
                 currentPage.wUnlatch();
                 bpm.unpinPage(currentPage.getPageID(), false);
                 // And repeat the process with the next page.
@@ -83,8 +79,6 @@ public class TableHeap {
                 currentPage = newPage;
             }
         }
-        // This line has caused most of us to double-take and "whoa double unlatch".
-        // We are not, in fact, double unlatching. See the invariant above.
         currentPage.wUnlatch();
         bpm.unpinPage(currentPage.getPageID(), true);
         // Update the transaction's write set.

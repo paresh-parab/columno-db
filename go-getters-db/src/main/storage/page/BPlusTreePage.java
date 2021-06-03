@@ -91,9 +91,6 @@ public class BPlusTreePage<KeyType, ValueType> {
     }
 
     public int getMinSize(){
-        //root that is leaf can be minimum 1
-        //root that is not leaf will have minimum 2 children
-        //max size is ceil(m/2)
         return isRootPage() ? (isLeafPage() ? 1: 2) : ((maxSize+1)/2);
     }
 

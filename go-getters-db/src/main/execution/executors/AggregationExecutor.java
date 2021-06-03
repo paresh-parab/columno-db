@@ -211,9 +211,7 @@ public class AggregationExecutor extends AbstractExecutor {
         return false;
     }
 
-    /**
-     * @return the tuple as an AggregateKey
-     */
+
     public AggregateKey makeKey(Tuple tuple) {
         List<Value> keys = new ArrayList<>();
         for (AbstractExpression expr : plan.getGroupBys()) {
@@ -222,9 +220,6 @@ public class AggregationExecutor extends AbstractExecutor {
         return new AggregateKey(keys);
     }
 
-    /**
-     * @return the tuple as an AggregateValue
-     */
     public AggregateValue makeVal(Tuple tuple) {
         List<Value> vals = new ArrayList<>();
         for (AbstractExpression expr : plan.getAggregates()) {

@@ -77,12 +77,7 @@ public class DiskManager
                 0, byteData, PAGE_SIZE - pageData.length(), pageData.length());
         try
         {
-            /*
-            ObjectOutputStream oos = new ObjectOutputStream(
-                    new FileOutputStream(dbIO.getName() + "/" + pageID));
-            oos.writeObject(pageData);
-            oos.flush();
-            oos.close(); */
+
 
             RandomAccessFile rap = new RandomAccessFile(dbIO.getName(), "rwd");
             rap.seek(offset);
@@ -198,20 +193,8 @@ public class DiskManager
 
     boolean hasFlushLogFuture() { return flushLogF == null; }
 
-    /*
-    public void delete(File db)
-    {
-        try {
-            if (db.isDirectory()) {
-                for (File c : Objects.requireNonNull(db.listFiles()))
-                    delete(c);
-            }
-        }
-        catch (Exception e) {
-            System.out.println("Failed to delete file: " + db);
-            e.printStackTrace();
-        }
-    }*/
+
+
     public void shutDown()
     {
         try {

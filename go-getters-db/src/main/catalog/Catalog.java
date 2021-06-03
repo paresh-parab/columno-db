@@ -61,17 +61,13 @@ public class Catalog {
 
     private BufferPoolManager bpm;
 
-    /** tables_ : table identifiers -> table metadata. Note that tables_ owns all table metadata. */
     private Map<Integer, TableMetadata> tables = new HashMap<>();
     /** names_ : table names -> table identifiers */
     private Map<String, Integer> names = new HashMap<>();
-    /** The next table identifier to be used. */
     private int nextTableOID = 0;
-    /** The colHeap to keep track of columns */
     public Map<Integer, String> colHeap = new HashMap<>();
 
 
-    /** indices: storing table id against column and index root page ID map entries */
     private Map<Integer, Map<Column, BPlusTree>> indices = new HashMap<>();
 
     public Catalog(BufferPoolManager bpm) {
@@ -120,7 +116,6 @@ public class Catalog {
     }
 
 
-    /** @return table metadata by name */
     public TableMetadata getTable(String tableName) {
         DEBUGGER.info("Finding metadata for " + tableName + " table from catalog");
         try{
@@ -136,7 +131,6 @@ public class Catalog {
         return null;
     }
 
-    /** @return table metadata by oid */
     public TableMetadata getTable(int tableOID) {
         DEBUGGER.info("Finding metadata for Table ID "+ tableOID +" from catalog");
 
@@ -157,7 +151,6 @@ public class Catalog {
         DEBUGGER.info("Creating index for "+ tables.get(tableOID).getName()+ " table on column "+ column);
 
         if( !tables.containsKey(tableOID) )
-            //table OID is invalid
             return false;
         List<Column> columnList = tables.get(tableOID).schema.getColumns();
         Column targetColumn = null;
@@ -183,7 +176,7 @@ public class Catalog {
 
         indexMap.put(targetColumn, tree);
         DEBUGGER.info("Populating index tree");
-        //timer.sleep
+
 
         return true;
     }

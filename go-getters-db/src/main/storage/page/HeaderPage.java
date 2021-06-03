@@ -8,7 +8,6 @@ public class HeaderPage extends IndexPage<String, Integer> {
     public boolean insertRecord(String name, int rootID) {
 
         int recordCount = getRecordCount();
-        // check for duplicate name
         if (findRecord(name) != -1)
             return false;
 
@@ -21,7 +20,6 @@ public class HeaderPage extends IndexPage<String, Integer> {
         int recordNum = getRecordCount();
 
         int index = findRecord(name);
-        // record does not exsit
         if (index == -1)
             return false;
         getData().set(index, new Pair<>());
@@ -31,7 +29,6 @@ public class HeaderPage extends IndexPage<String, Integer> {
 
     public boolean updateRecord(String name, int rootID) {
         int index = findRecord(name);
-        // record does not exsit
         if (index == -1)
             return false;
         ((Pair<String, Integer>)getData().get(index)).setValue(rootID);
@@ -60,7 +57,6 @@ public class HeaderPage extends IndexPage<String, Integer> {
         assert (name.length() < 32);
 
         int index = findRecord(name);
-        // record does not exsit
         if (index == -1)
             return false;
         rootID.setValue(((Pair<String, Integer>)getData().get(index)).getValue());

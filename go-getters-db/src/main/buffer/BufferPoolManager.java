@@ -19,15 +19,15 @@ import static main.type.PageType.INDEX;
 public class BufferPoolManager
 {
     private final DiskManager diskManager;
-    private final HashTable<Integer, Page> pageTable; 
-    private final Replacer<Page> replacer;   // to find an unpinned page for replacement
-    private final ArrayList<Page> freeList; // to find a free page for replacement
-    private final Lock mutex = new ReentrantLock(true); // to protect shared data structure
+    private final HashTable<Integer, Page> pageTable;
+    private final Replacer<Page> replacer;
+    private final ArrayList<Page> freeList;
+    private final Lock mutex = new ReentrantLock(true);
     private final ArrayList<Page> pages;
 
     public BufferPoolManager(int poolSize, DiskManager diskManager)
     {
-        // number of pages in buffer pool
+
         this.diskManager = diskManager;
         pages = new ArrayList<>(poolSize);
         pageTable = new ExtendibleHash<>(Constants.BUCKET_SIZE);
