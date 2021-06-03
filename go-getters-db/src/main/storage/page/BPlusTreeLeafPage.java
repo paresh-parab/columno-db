@@ -188,13 +188,6 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
         return getSize();
     }
 
-/*****************************************************************************
- * MERGE
- *****************************************************************************/
-    /*
-     * Remove all of key & value pairs from this page to "recipient" page, then
-     * update next page id
-     */
 
     public void moveAllTo(BPlusTreeLeafPage recipient, int rootID, BufferPoolManager buffer_pool_manager) {
         if(recipient != null){
@@ -210,17 +203,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
         }
     }
 
-//    void copyAllFrom(MappingType items, int size) {
-//
-//    }
 
-/*****************************************************************************
- * REDISTRIBUTE
- *****************************************************************************/
-    /*
-     * Remove the first key & value pair from this page to "recipient" page, then
-     * update relavent key & value pair in its parent page.
-     */
 
     public void moveFirstToEndOf(BPlusTreeLeafPage recipient, BufferPoolManager buffer_pool_manager) {
         Pair<KeyType, ValueType> pair = getItem(0);
@@ -242,10 +225,7 @@ public class BPlusTreeLeafPage <KeyType, ValueType, KeyComparator extends Compar
         }
 
     }
-    /*
-     * Remove the last key & value pair from this page to "recipient" page, then
-     * update relavent key & value pair in its parent page.
-     */
+
 
     public  void moveLastToFrontOf(BPlusTreeLeafPage recipient, int parentIndex, BufferPoolManager buffer_pool_manager) {
         Pair<KeyType, ValueType> pair = getItem(getSize() - 1);

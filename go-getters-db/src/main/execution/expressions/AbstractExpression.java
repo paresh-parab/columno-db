@@ -10,7 +10,7 @@ import java.util.List;
 
 public abstract class AbstractExpression {
     private List<AbstractExpression> children;
-    /** The return type of this expression. */
+
     private TypeID retType;
 
     public AbstractExpression(List<AbstractExpression> children, TypeID retType) {
@@ -24,17 +24,17 @@ public abstract class AbstractExpression {
 
     public abstract Value evaluateAggregate(List<Value> groupBys, List<Value> aggregates);
 
-    /** @return the child_idx'th child of this expression */
+
     public AbstractExpression getChildAt(int child_idx) {
         return children.get(child_idx);
     }
 
-    /** @return the children of this expression, ordering may matter */
+
     public List<AbstractExpression> getChildren() {
         return children;
     }
 
-    /** @return the type of this expression if it were to be evaluated */
+
     public TypeID getReturnType() {
         return retType;
     }

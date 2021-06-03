@@ -38,9 +38,6 @@ public class Value {
         this.typeID = o.typeID;
 
     }
-// A value is an abstract class that represents a view over SQL data stored in
-// some materialized state. All values have a type and comparison functions, but
-// subclasses implement other type-specific functionality.
 
     // BOOLEAN and TINYINT
     public void swap(Value first, Value second) {
@@ -115,7 +112,6 @@ public class Value {
         return newValue;
 
     }
-    // Comparison Methods
 
     public boolean compareEquals(Value o) {
         switch (typeID){
@@ -190,7 +186,6 @@ public class Value {
         return false;
     }
 
-    // Other mathematical functions
     public Value add(Value o){
         Value newValue = null;
         switch (typeID){
@@ -294,18 +289,12 @@ public class Value {
         return integer == null || string == null || bool == null;
     }
 
-    // Serialize this value into the given storage space. The inlined parameter
-    // indicates whether we are allowed to inline this value into the storage
-    // space, or whether we must store only a reference to this value. If inlined
-    // is false, we may use the provided data pool to allocate space for this
-    // value, storing a reference into the allocated pool space in the storage.
 
     public TypeID getTypeID() {
         return typeID;
     }
 
 
-    // Return a string version of this value
     public String toString() {
         switch (typeID){
             case INTEGER_TYPE:

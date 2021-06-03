@@ -28,7 +28,7 @@ public class ExecutorFactory {
                 }
             }
 
-            // Create a new insert executor.
+
             case Insert: {
                 if (mode == 0) {
                     InsertPlanNode insertPlan = (InsertPlanNode) plan;
@@ -48,7 +48,7 @@ public class ExecutorFactory {
             }
 
 
-            // Create a new aggregation executor.
+
             case Aggregation: {
                 if (mode == 0) {
                     AggregationPlanNode aggPlan = (AggregationPlanNode) plan;
