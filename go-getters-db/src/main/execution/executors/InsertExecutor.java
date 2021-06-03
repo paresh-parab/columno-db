@@ -37,7 +37,7 @@ public class InsertExecutor extends AbstractExecutor {
 
                 Catalog catalog = this.getExecutorContext().getCatalog();
                 this.table = catalog.getTable(this.plan.getTableOID()).getTable();
-                // Initialize all children
+
                 if (!this.plan.isRawInsert()) {
                         this.childExe.init();
                 }
@@ -61,7 +61,7 @@ public class InsertExecutor extends AbstractExecutor {
                         }
                         return true;
                 }
-                // get tuples from child executor, and then insert them
+
                 while (this.childExe.next(tuples)) {
                         boolean success = this.table.insertTuple(tuple);
                         if (!success) return success;

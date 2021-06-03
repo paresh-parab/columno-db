@@ -149,12 +149,7 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
         return getSize();
     }
 
-/*****************************************************************************
- * SPLIT
- *****************************************************************************/
-    /*
-     * Remove half of key & value pairs from this page to "recipient" page
-     */
+
 
     public void moveHalfTo( BPlusTreeInternalPage recipient, BufferPoolManager buffer_pool_manager) {
         if(recipient != null){
@@ -219,13 +214,7 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
         return null;
 
     }
-/*****************************************************************************
- * MERGE
- *****************************************************************************/
-    /*
-     * Remove all of key & value pairs from this page to "recipient" page, then
-     * update relavent key & value pair in its parent page.
-     */
+
 
     public void moveAllTo( BPlusTreeInternalPage recipient, int index_in_parent, BufferPoolManager buffer_pool_manager) {
         int start = recipient.getSize();
@@ -261,13 +250,7 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
 
     }
 
-/*****************************************************************************
- * REDISTRIBUTE
- *****************************************************************************/
-    /*
-     * Remove the first key & value pair from this page to tail of "recipient"
-     * page, then update relavent key & value pair in its parent page.
-     */
+
 
     public void moveFirstToEndOf( BPlusTreeInternalPage recipient, BufferPoolManager buffer_pool_manager) {
         Pair<KeyType, ValueType> pair = new Pair<>(keyAt(0), valueAt(0));
@@ -275,7 +258,6 @@ public class BPlusTreeInternalPage<KeyType, ValueType, KeyComparator extends Com
         array.remove(0);
         array.add(new Pair<>());
         recipient.copyLastFrom(pair, buffer_pool_manager);
-        // update child parent page id
         int childPageId = (int) pair.getValue();
         IndexPage<KeyType, ValueType> page = (IndexPage<KeyType, ValueType>) buffer_pool_manager.fetchPage(childPageId);
         BPlusTreePage child = new BPlusTreePage(page);

@@ -276,21 +276,12 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         return index == 0;//index == 0 means sibling is right
     }
 
-    /*
-     * Move all the key & value pairs from one page to its sibling page, and notify
-     * buffer pool manager to delete this page. Parent page must be adjusted to
-     * take info of deletion into account. Remember to deal with coalesce or
-     * redistribute recursively if necessary.
-     * Using template N to represent either internal page or leaf page.
-     * @param   neighbor_node      sibling page of input "node"
-     * @param   node               input from method coalesceOrRedistribute()
-     * @param   parent             parent page of input "node"
-     * @return  true means parent node should be deleted, false means no deletion
-     * happend
-     */
+
+
     private  <N extends BPlusTreePage> boolean coalesce( N neighborNode, N node, BPlusTreeInternalPage<KeyType,Integer, KeyComparator> parent,
                                                int index) {
-        //assumption neighbor_node is before node
+
+
         try{
             if(node.getSize() + neighborNode.getSize() > node.getMaxSize())
                 throw new Exception("Unable to coalesce");
@@ -310,15 +301,8 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
     }
 
 
-    /*
-     * Redistribute key & value pairs from one page to its sibling page. If index ==
-     * 0, move sibling page's first key & value pair into end of input "node",
-     * otherwise move sibling page's last key & value pair into head of input
-     * "node".
-     * Using template N to represent either internal page or leaf page.
-     * @param   neighbor_node      sibling page of input "node"
-     * @param   node               input from method coalesceOrRedistribute()
-     */
+
+
     private <N extends BPlusTreePage> void redistribute(N neighborNode, N node, int index) {
         if (index == 0) {
             neighborNode.moveFirstToEndOf(node,buffer_pool_manager);
@@ -327,16 +311,8 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         }
     }
 
-    /*
-     * Update root page if necessary
-     * NOTE: size of root page can be less than min size and this method is only
-     * called within coalesceOrRedistribute() method
-     * case 1: when you delete the last element in root page, but root page still
-     * has one last child
-     * case 2: when you delete the last element in whole b+ tree
-     * @return : true means root page should be deleted, false means no deletion
-     * happend
-     */
+
+
     private boolean adjustRoot(BPlusTreePage oldRootNode) {
         try{
             if (oldRootNode.isLeafPage()) {// case 2
@@ -368,14 +344,8 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
 
     }
 
-    /*****************************************************************************
-     * INDEX ITERATOR
-     *****************************************************************************/
-    /*
-     * Input parameter is void, find the leaftmost leaf page first, then construct
-     * index iterator
-     * @return : index iterator
-     */
+
+
 
     public IndexIterator begin() {
         KeyType useless = null;
@@ -394,13 +364,8 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         return new IndexIterator(startLeaf, idx, buffer_pool_manager);
     }
 
-    /*****************************************************************************
-     * UTILITIES AND DEBUG
-     *****************************************************************************/
-    /*
-     * Find leaf page containing particular key, if leftMost flag == true, find
-     * the left most leaf page
-     */
+
+
 
     public BPlusTreeLeafPage findLeafPage(KeyType key){
         return this.findLeafPage(key, false, OpType.READ);
@@ -417,8 +382,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
             tryUnlockRootPageID(exclusive);
             return null;
         }
-        //, you need to first fetch the page from buffer pool using its unique page_id, then reinterpret cast to either
-        // a leaf or an internal page, and unpin the page after any writing or reading operations.
+
         BPlusTreePage pointer =  crabingProtocalFetchPage(rootPageID,op,-1);
         int next;
         for (int cur = rootPageID;
@@ -449,14 +413,7 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         return treePage;
     }
 
-    /*
-     * Update/Insert root page id in header page(where page_id = 0, header_page is
-     * defined under include/page/header_page.h)
-     * Call this method everytime root page id is changed.
-     * @parameter: insert_record      defualt value is false. When set to true,
-     * insert a record <index_name, root_page_id> into header page instead of
-     * updating it.
-     */
+
     private void updateRootPageID(){
         updateRootPageID(false);
     }
@@ -470,9 +427,6 @@ public class BPlusTree <KeyType, ValueType, KeyComparator extends Comparator>{
         buffer_pool_manager.unpinPage(HEADER_PAGE_ID, true);
     }
 
-    /***************************************************************************
-     *  Check integrity of B+ tree data structure.
-     ***************************************************************************/
 
 
     public int isBalanced(int pid) {

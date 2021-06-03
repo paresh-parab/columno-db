@@ -11,7 +11,7 @@ import static main.execution.plans.PlanType.SeqScan;
 public class SeqReadPlanNode extends AbstractPlanNode{
 
     private AbstractExpression predicate;
-    /** The table whose tuples should be scanned. */
+
     private int tableOID;
 
     public SeqReadPlanNode(Schema output, AbstractExpression predicate, int tableOID){
