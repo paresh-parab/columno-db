@@ -19,7 +19,7 @@ import static main.type.PageType.INDEX;
 public class BufferPoolManager
 {
     private final DiskManager diskManager;
-    private final HashTable<Integer, Page> pageTable; // to keep track of pages
+    private final HashTable<Integer, Page> pageTable; 
     private final Replacer<Page> replacer;   // to find an unpinned page for replacement
     private final ArrayList<Page> freeList; // to find a free page for replacement
     private final Lock mutex = new ReentrantLock(true); // to protect shared data structure
