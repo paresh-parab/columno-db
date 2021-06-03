@@ -67,7 +67,7 @@ public class AutoModeDemo
         }};
         s = new Schema(cols);
         table = "USER_DETAILS";
-        diskManager = new DiskManager("RowDemo.db");
+        diskManager = new DiskManager("AutoRowDemo.db");
         bufferPoolManager = new BufferPoolManager(10, diskManager);
         catalog = new Catalog(bufferPoolManager);
 
